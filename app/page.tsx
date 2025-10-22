@@ -107,11 +107,15 @@ const StepPill = ({ index, active, complete, label }) => (
   </div>
 );
 
-const StepsBar = ({ step, steps }) => {
+const StepsBar = ({ step, steps, size = 'md', className = '' }) => {
   const total = Math.max(1, steps.length);
   const pct = total > 1 ? Math.min(100, Math.max(0, (step / (total - 1)) * 100)) : 0;
+  const isSm = size === 'sm';
+  const trackH = isSm ? 'h-3' : 'h-4';
+  const pad = isSm ? 'p-1' : 'p-1.5 sm:p-2';
+  const icon = isSm ? 'w-4 h-4' : 'w-5 h-5 sm:w-6 sm:h-6';
   return (
-    <div className="relative w-full h-3 sm:h-4 bg-gray-200 rounded-full" aria-hidden="true">
+    <div className={`relative w-full ${trackH} bg-gray-200 rounded-full ${className}`} aria-hidden="true">
       {/* Fill */}
       <div
         className="absolute left-0 top-0 h-full rounded-full"
@@ -122,8 +126,8 @@ const StepsBar = ({ step, steps }) => {
         className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
         style={{ left: `${pct}%` }}
       >
-        <div className="bg-white rounded-full border shadow-sm p-1.5 sm:p-2">
-          <Car className="w-5 h-5 sm:w-6 sm:h-6" style={color(THEME.primary)} />
+        <div className={`bg-white rounded-full border shadow-sm ${pad}`}>
+          <Car className={icon} style={color(THEME.primary)} />
         </div>
       </div>
     </div>
@@ -151,9 +155,9 @@ const StartStep = ({ next }) => (
       </div>
       <div>
         <h2 className="text-xl font-semibold" style={color(THEME.secondary)}>
-          Non-Owner Auto Quote
+          Non-Owner Auto Insurance Quote
         </h2>
-        <p className="text-sm text-gray-500">Get covered in minutes. No vehicle required.</p>
+        <p className="text-sm text-gray-500">Get insurance coverage in minutes. No vehicle required.</p>
       </div>
     </div>
     <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
@@ -504,7 +508,7 @@ const HistoryStep = ({ data, setData, next, back }) => {
           </div>
           {showViolations && (
             <div className="mt-3">
-              <p className="text-sm text-gray-600 mb-1">Please select the best match below</p>
+              <div className="text-sm text-gray-600 mb-1">Please select the best match below</div>
               <select className="w-full border rounded-md h-10 px-3" value={data.violationType || ""} onChange={(e) => setData({ ...data, violationType: e.target.value })}>
                 <option value="" disabled>Select...</option>
                 {OPTIONS.map((o) => (<option key={o} value={o}>{o}</option>))}
@@ -526,7 +530,7 @@ const HistoryStep = ({ data, setData, next, back }) => {
           </div>
           {showAccidents && (
             <div className="mt-3">
-              <p className="text-sm text-gray-600 mb-1">Please select the best match below</p>
+              <div className="text-sm text-gray-600 mb-1">Please select the best match below</div>
               <select className="w-full border rounded-md h-10 px-3" value={data.accidentType || ""} onChange={(e) => setData({ ...data, accidentType: e.target.value })}>
                 <option value="" disabled>Select...</option>
                 {OPTIONS.map((o) => (<option key={o} value={o}>{o}</option>))}
@@ -559,7 +563,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
   if (isMobile) {
     return (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Choose your coverage</h3>
+        <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Choose Your Coverage</h3>
         <Card>
           <CardContent className="p-6 text-center space-y-3">
             <div className="text-sm text-gray-500">Due Today</div>
@@ -574,7 +578,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
                 <div className="space-y-2">
                   <label className="flex items-center gap-2">
                     <input type="radio" name="pkg" checked={pkg === "stateMin"} onChange={() => setPkg("stateMin")} />
-                    <span className="font-medium">NC State Minimums</span>
+                    <span className="font-medium">State Minimum Limits (NC)</span>
                   </label>
                   <ul className="text-sm text-gray-600 list-disc pl-6">
                     <li>Liability (BI/PD): 50/100/50</li>
@@ -603,7 +607,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
                     </label>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">Non-owner policies exclude comp/collision and are secondary to the vehicle owner's policy.</p>
+                <p className="text-xs text-gray-500">Non-Owner Auto Insurance is secondary to the Vehicle Owner's policy and excludes Comprehensive and Collision Coverage</p>
               </div>
             )}
             <Button className="w-full" style={bg(THEME.primary)} onClick={() => { setData({ ...data, ...selected, monthly }); next(); }}>Continue</Button>
@@ -616,7 +620,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Choose your coverage</h3>
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Choose Your Coverage</h3>
       <Card>
         <CardContent className="p-6 text-center space-y-3">
           <div className="text-sm text-gray-500">Due Today</div>
@@ -631,7 +635,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
               <div className="space-y-2">
                 <label className="flex items-center gap-2">
                   <input type="radio" name="pkg" checked={pkg === "stateMin"} onChange={() => setPkg("stateMin")} />
-                  <span className="font-medium">NC State Minimums</span>
+                  <span className="font-medium">State Minimum Limits (NC)</span>
                 </label>
                 <ul className="text-sm text-gray-600 list-disc pl-6">
                   <li>Liability (BI/PD): 50/100/50</li>
@@ -660,7 +664,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
                   </label>
                 </div>
               </div>
-              <p className="text-xs text-gray-500">Non-owner policies exclude comp/collision and are secondary to the vehicle owner's policy.</p>
+              <p className="text-xs text-gray-500">Non-Owner Auto Insurance is secondary to the Vehicle Owner's policy and excludes Comprehensive and Collision Coverage</p>
             </div>
           )}
           <Button className="w-full" style={bg(THEME.primary)} onClick={() => { setData({ ...data, ...selected, monthly }); next(); }}>Continue</Button>
@@ -671,33 +675,84 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
   );
 };
 
-const SummaryStep = ({ back, data }) => (
-  <div className="space-y-6">
-    <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>
-      Summary (Preview)
-    </h3>
-    <Card>
-      <CardContent className="p-6 text-sm space-y-3">
-        <p className="text-gray-600">
-          This is a placeholder summary screen for presentation purposes. It does not reference data from prior steps.
-        </p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-semibold" style={color(THEME.secondary)}>$29</span>
-          <span className="text-gray-500">/mo (mock)</span>
-        </div>
-        <ul className="list-disc pl-5 space-y-1 text-gray-600">
-          <li>NC non-owner policy (sample)</li>
-          <li>DL-123 available (if required)</li>
-          <li>Agent follow-up after submit</li>
-        </ul>
-      </CardContent>
-    </Card>
-    <div className="flex flex-col sm:flex-row gap-3">
-      <Button variant="secondary" onClick={back}>Back</Button>
-      <Button style={bg(THEME.primary)}>Finish & connect with an agent</Button>
+const SummaryStep = ({ back, data, setData }) => {
+  const monthly = Number(((data && data.monthly) != null ? data.monthly : 46.8));
+  const paidInFull = Number((monthly * 6).toFixed(2));
+  const [plan, setPlan] = useState((data && data.paymentPlan) ? data.paymentPlan : 'monthly'); // 'monthly' | 'pif'
+
+  const onChoose = (value) => {
+    setPlan(value);
+    // Persist chosen plan to parent data (optional)
+    if (setData) setData({ ...data, paymentPlan: value });
+  };
+
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>
+        Quote Summary
+      </h3>
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <p className="text-sm text-gray-600">
+            Thank you for getting a quote! Based on the information you provided and the quote options you selected we can start your policy today.
+          </p>
+
+          {/* Plan selector */}
+          <div className="grid gap-3">
+            <label className={`flex items-center justify-between gap-4 rounded-xl border p-4 cursor-pointer ${plan === 'monthly' ? 'ring-2' : ''}`} style={plan === 'monthly' ? border(THEME.primary) : undefined}>
+              <div className="flex items-start gap-3">
+                <input
+                  type="radio"
+                  name="plan"
+                  value="monthly"
+                  checked={plan === 'monthly'}
+                  onChange={() => onChoose('monthly')}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="font-medium">Monthly Payments</div>
+                  <div className="text-sm text-gray-600">Due today: ${monthly.toFixed(2)}</div>
+                  <div className="text-xs text-gray-500">+ 5 monthly payments of ${monthly.toFixed(2)}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-semibold" style={color(THEME.secondary)}>${monthly.toFixed(2)}</div>
+                <div className="text-xs text-gray-500">6 month total: ${paidInFull.toFixed(2)}</div>
+              </div>
+            </label>
+
+            <label className={`flex items-center justify-between gap-4 rounded-xl border p-4 cursor-pointer ${plan === 'pif' ? 'ring-2' : ''}`} style={plan === 'pif' ? border(THEME.primary) : undefined}>
+              <div className="flex items-start gap-3">
+                <input
+                  type="radio"
+                  name="plan"
+                  value="pif"
+                  checked={plan === 'pif'}
+                  onChange={() => onChoose('pif')}
+                  className="mt-1"
+                />
+                <div>
+                  <div className="font-medium">Paid in Full</div>
+                  <div className="text-sm text-gray-600">One-time payment today</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-semibold" style={color(THEME.secondary)}>${paidInFull.toFixed(2)}</div>
+                <div className="text-xs text-gray-500">Covers full 6-month term</div>
+              </div>
+            </label>
+          </div>
+        </CardContent>
+      </Card>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button variant="secondary" onClick={back}>Back</Button>
+        <Button style={bg(THEME.primary)}>
+          {plan === 'pif' ? 'Pay in Full & Buy' : 'Finalize Rate & Buy'}
+        </Button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // --- Shared Header for both previews ---
 const TopBar = ({ isDesktop }) => (
@@ -753,7 +808,7 @@ function DesktopPreview() {
           />
         );
       case 7:
-        return <SummaryStep data={data} back={() => setStep(2)} />;
+        return <SummaryStep data={data} setData={setData} back={() => setStep(2)} />;
       default:
         return null;
     }
@@ -789,7 +844,7 @@ function DesktopPreview() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 text-sm text-gray-600 space-y-3">
-                      <p>Non-Owner Insurance may be required for North Carolina drivers to obtain for the the following:</p>
+                      <div>Non-Owner Insurance may be required for North Carolina drivers to obtain for the the following:</div>
                       <ul className="list-disc pl-5 space-y-1">
                         <li>Acquire a North Carolina drivers license</li>
                         <li>New NC residents who want to obtain a license</li>
@@ -848,7 +903,7 @@ function MobilePreview() {
           />
         );
       case 7:
-        return <SummaryStep data={data} back={() => setStep(2)} />;
+        return <SummaryStep data={data} setData={setData} back={() => setStep(2)} />;
       default:
         return null;
     }
@@ -861,30 +916,24 @@ function MobilePreview() {
           <div className="absolute inset-x-0 bottom-0 border-t bg-white/90 py-2 z-10">
             <PoweredBy compact />
           </div>
-          <div className="absolute inset-x-0 top-0 h-12" style={bg(THEME.primary)} />
-          {/* Top-right click-to-call icon overlayed on the mobile banner */}
-          <a
-            href="tel:+19104524333"
-            className="absolute top-1.5 right-2 inline-flex items-center justify-center rounded-full p-2 shadow-sm"
-            style={{ ...bg("rgba(255,255,255,0.15)"), color: "#ffffff", backdropFilter: "blur(2px)" }}
-            aria-label="Call Able Insurance"
-          >
-            <Phone className="w-4 h-4" />
-          </a>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>
-                Able Insurance Agency
-              </div>
+          <div className="absolute inset-x-0 top-0 h-12" style={bg(THEME.primary)}>
+            <div className="flex items-center justify-between px-4 py-2 text-white">
+              <div className="font-semibold tracking-tight text-[1.08rem]">Able Insurance Agency</div>
               <a
                 href="tel:+19104524333"
                 className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm"
-                style={{ ...bg(THEME.primary), color: "#ffffff" }}
+                style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: '#ffffff' }}
               >
                 <Phone className="w-3.5 h-3.5" /> Call
               </a>
             </div>
-            <div className="mb-2"><StepsBar step={step} steps={steps} /></div>
+          </div>
+          {/* Progress bar under the header on mobile */}
+          <div className="absolute left-4 right-4 top-[50px] z-20">
+            <StepsBar step={step} steps={steps} size="sm" />
+          </div>
+          {/* Top-right click-to-call icon overlayed on the mobile banner */}
+          <div className="p-4 pt-20 [&_.text-xs]:text-[0.81rem] [&_.text-sm]:text-[0.95rem] [&_.text-base]:text-[1.08rem] [&_.text-lg]:text-[1.21rem] [&_.text-xl]:text-[1.35rem]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
