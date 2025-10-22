@@ -20,6 +20,37 @@ const bg = (hex) => ({ backgroundColor: hex });
 const border = (hex) => ({ borderColor: hex });
 const color = (hex) => ({ color: hex });
 
+// ---- Brand Logo (image + dependable text fallback) ----
+const BrandLogo = (
+  { className = '', height = 24, src }:
+  { className?: string; height?: number; src?: string }
+) => {
+  // Only show the image after it *successfully* loads; otherwise show text.
+  const [loaded, setLoaded] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
+  const showImage = loaded && !failed;
+
+  return (
+    <div className={`flex items-center ${className}`} style={{ height }}>
+      {!failed && (
+        <img
+          src={src || '/able-logo.svg'}
+          alt="Able Insurance Agency"
+          className="block h-full w-auto"
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+        />
+      )}
+      {!showImage && (
+        <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>
+          Able Insurance Agency
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 // Shared initial state (to keep lines down)
 const makeInitialState = () => ({
   ownsCar: "no", householdVehicle: "no", sr22: false, age: 30, state: "NC",
@@ -650,9 +681,7 @@ const SummaryStep = ({ back, data }) => (
 // --- Shared Header for both previews ---
 const TopBar = ({ isDesktop }) => (
   <header className="flex items-center justify-between mb-4">
-    <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>
-      Able Insurance Agency
-    </div>
+    <BrandLogo height={28} src="/able-logo.svg" />
     {isDesktop ? (
       <a href="tel:+19104524333" className="hidden sm:flex items-center gap-2 text-sm font-medium" style={color(THEME.secondary)}>
         <Phone className="w-4 h-4" /> (910) 452-4333
@@ -663,6 +692,8 @@ const TopBar = ({ isDesktop }) => (
       </a>
     )}
   </header>
+);
+
 );
 
 // --- Main Preview Layouts ---
@@ -823,17 +854,16 @@ function MobilePreview() {
           </a>
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>
-                Able Insurance Agency
-              </div>
-              <a
-                href="tel:+19104524333"
-                className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm"
-                style={{ ...bg(THEME.primary), color: "#ffffff" }}
-              >
-                <Phone className="w-3.5 h-3.5" /> Call
-              </a>
-            </div>
+  <BrandLogo height={20} src="/able-logo.svg" />
+  <a
+    href="tel:+19104524333"
+    className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm"
+    style={{ ...bg(THEME.primary), color: "#ffffff" }}
+  >
+    <Phone className="w-3.5 h-3.5" /> Call
+  </a>
+</div>
+
             <div className="text-xs text-gray-500 mb-2">Step {step + 1} of 8</div>
             <AnimatePresence mode="wait">
               <motion.div
