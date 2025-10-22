@@ -620,7 +620,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
   );
 };
 
-const SummaryStep = ({ back }) => (
+const SummaryStep = ({ back, data }) => (
   <div className="space-y-6">
     <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>
       Summary (Preview)
