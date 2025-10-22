@@ -80,7 +80,7 @@ const StepsBar = ({ step, steps }) => (
 );
 
 // --- Pricing model (mock) ---
-export function priceQuote({ state, sr22, age, biLimit, umLimit }) {
+function priceQuote({ state, sr22, age, biLimit, umLimit }) {
   let base = 26; // monthly base
   const stateFactor = { NC: 1, SC: 1.05, GA: 1.12, VA: 1.08, TN: 0.98, FL: 1.22 };
   const sf = stateFactor[state] ?? 1.1;
