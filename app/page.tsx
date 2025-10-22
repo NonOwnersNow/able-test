@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // --- Theme ---
 // Using your requested primary #1A2345; secondary/navy retained. Adjust accent if you want lighter/darker.
@@ -854,44 +853,16 @@ function MobilePreview() {
   );
 }
 
-export default function AbleNonOwnerMockups() {
+export default function AbleNonOwnerApp() {
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(to bottom, #F9FAFB, #FFFFFF)" }}>
-      <div className="max-w-7xl mx-auto py-6 px-4">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={color(THEME.secondary)}>
-              Able Insurance — Non-Owner Quote Mockups
-            </h1>
-            <p className="text-sm text-gray-600">Side-by-side previews for desktop & mobile with a quick, guided flow.</p>
-          </div>
-          <Tabs defaultValue="desktop" className="hidden sm:block">
-            <TabsList>
-              <TabsTrigger value="desktop">Desktop</TabsTrigger>
-              <TabsTrigger value="mobile">Mobile</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        <Tabs defaultValue="desktop" className="sm:hidden">
-          <TabsList className="mb-4">
-            <TabsTrigger value="desktop">Desktop</TabsTrigger>
-            <TabsTrigger value="mobile">Mobile</TabsTrigger>
-          </TabsList>
-          <TabsContent value="desktop">
-            <DesktopPreview />
-          </TabsContent>
-          <TabsContent value="mobile">
-            <MobilePreview />
-          </TabsContent>
-        </Tabs>
-
-        <div className="hidden sm:block">
-          <div className="grid grid-cols-2 gap-6">
-            <div><DesktopPreview /></div>
-            <div><MobilePreview /></div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-white">
+      {/* Mobile: full app */}
+      <div className="sm:hidden">
+        <MobilePreview />
+      </div>
+      {/* Desktop: full app */}
+      <div className="hidden sm:block">
+        <DesktopPreview />
       </div>
     </div>
   );
