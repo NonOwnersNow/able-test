@@ -61,15 +61,29 @@ const makeInitialState = () => ({
 });
 
 // --- Powered by (GCI) footer ---
-// NOTE: kept as plain JS to avoid TS parsing issues
-const PoweredBy = ({ compact = false }) => (
-  <div className={`flex items-center justify-center ${compact ? "gap-1" : "gap-2"} text-gray-600 ${compact ? "text-[11px]" : "text-xs"}`}>
-    <span>Powered by</span>
-    <span className="inline-flex items-center justify-center rounded border px-1.5 py-0.5 text-[10px]" style={color(THEME.secondary)}>
-      GCI
-    </span>
-  </div>
-);
+// Renders the GCI logo from /public/GCILogo.png with a safe text fallback.
+const PoweredBy = ({ compact = false }) => {
+  const [logoOk, setLogoOk] = useState(true);
+  const imgH = compact ? 24 : 30; // px (mobile: 24, desktop: 30)
+  return (
+    <div className={`flex items-center justify-center ${compact ? "gap-1" : "gap-2"} text-gray-600 ${compact ? "text-[11px]" : "text-xs"}`}>
+      <span>Powered by</span>
+      {logoOk ? (
+        <img
+          src="/GCILogo.png"
+          alt="Greenville Casualty Insurance"
+          style={{ height: imgH, width: 'auto' }}
+          className="block w-auto"
+          onError={() => setLogoOk(false)}
+        />
+      ) : (
+        <span className="inline-flex items-center justify-center rounded border px-1.5 py-0.5 text-[10px]" style={color(THEME.secondary)}>
+          GCI
+        </span>
+      )}
+    </div>
+  );
+};
 
 // --- Helper components ---
 const StepPill = ({ index, active, complete, label }) => (
@@ -891,4 +905,3 @@ export default function AbleNonOwnerApp() {
     </div>
   );
 }
-
