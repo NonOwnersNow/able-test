@@ -7,39 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const THEME = {
-  primary: "#1A2345",
-  secondary: "#0D2D53",
-  accent: "#CFE8D6",
-};
-
+const THEME = { primary: "#1A2345", secondary: "#0D2D53", accent: "#CFE8D6" };
 const bg = (hex) => ({ backgroundColor: hex });
 const border = (hex) => ({ borderColor: hex });
 const color = (hex) => ({ color: hex });
-
-const BrandLogo = ({ className = "", height = 24, src }) => {
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const showImage = loaded && !failed;
-  return (
-    <div className={`flex items-center ${className}`} style={{ height }}>
-      {!failed && (
-        <img
-          src={src || "/able-logo.svg"}
-          alt="Able Insurance Agency"
-          className="block h-full w-auto"
-          onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
-        />
-      )}
-      {!showImage && (
-        <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>
-          Able Insurance Agency
-        </div>
-      )}
-    </div>
-  );
-};
 
 const makeInitialState = () => ({
   ownsCar: "no",
@@ -74,7 +45,25 @@ const makeInitialState = () => ({
   hasAccidents: "no",
   accidentType: "",
   accidentPlan: true,
+  coveragePackage: "stateMin",
+  paymentPlan: "monthly",
 });
+
+const BrandLogo = ({ className = "", height = 24, src }) => {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const showImage = loaded && !failed;
+  return (
+    <div className={`flex items-center ${className}`} style={{ height }}>
+      {!failed && (
+        <img src={src || "/able-logo.svg"} alt="Able Insurance Agency" className="block h-full w-auto" onLoad={() => setLoaded(true)} onError={() => setFailed(true)} />
+      )}
+      {!showImage && (
+        <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>Able Insurance Agency</div>
+      )}
+    </div>
+  );
+};
 
 const PoweredBy = ({ compact = false }) => {
   const [logoOk, setLogoOk] = useState(true);
@@ -83,17 +72,9 @@ const PoweredBy = ({ compact = false }) => {
     <div className={`flex items-center justify-center ${compact ? "gap-1" : "gap-2"} text-gray-600 ${compact ? "text-[11px]" : "text-xs"}`}>
       <span>Powered by</span>
       {logoOk ? (
-        <img
-          src="/GCILogo.png"
-          alt="Greenville Casualty Insurance"
-          style={{ height: imgH, width: "auto" }}
-          className="block w-auto"
-          onError={() => setLogoOk(false)}
-        />
+        <img src="/GCILogo.png" alt="Greenville Casualty Insurance" style={{ height: imgH, width: "auto" }} className="block w-auto" onError={() => setLogoOk(false)} />
       ) : (
-        <span className="inline-flex items-center justify-center rounded border px-1.5 py-0.5 text-[10px]" style={color(THEME.secondary)}>
-          GCI
-        </span>
+        <span className="inline-flex items-center justify-center rounded border px-1.5 py-0.5 text-[10px]" style={color(THEME.secondary)}>GCI</span>
       )}
     </div>
   );
@@ -109,10 +90,10 @@ const StepsBar = ({ step, steps, size = "md", className = "" }) => {
   return (
     <div className={`relative w-full ${trackH} rounded-full ${className}`} aria-hidden="true" style={{ background: "linear-gradient(#e6eaf0,#dfe3ea)" }}>
       <div className="absolute inset-0 rounded-full pointer-events-none" style={{ boxShadow: "inset 0 1px 2px rgba(0,0,0,0.08)" }} />
-      <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: THEME.primary, transition: "width 240ms ease" }} />
+      <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: '#f49646', transition: "width 240ms ease" }} />
       <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ left: `${pct}%` }}>
         <div className={`bg-white rounded-full border shadow-sm ${pad}`}>
-          <Car className={icon} style={color(THEME.primary)} />
+          <Car className={icon} style={color('#f49646')} />
         </div>
       </div>
     </div>
@@ -150,9 +131,7 @@ const StartStep = ({ next }) => (
       <li>Instant, online policy</li>
     </ul>
     <div>
-      <Button className="w-full sm:w-auto transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>
-        Start your quote
-      </Button>
+      <Button className="w-full sm:w-auto transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>Start your quote</Button>
     </div>
   </div>
 );
@@ -161,50 +140,29 @@ const EligibilityStep = ({ data, setData, next, back, forceStack = false }) => {
   const ineligible = data.ownsCar === "yes" || data.householdVehicle === "yes";
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>
-        Eligibility
-      </h3>
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Eligibility</h3>
       <div className={forceStack ? "flex flex-col items-center gap-8" : "flex flex-col items-center gap-8 sm:grid sm:grid-cols-2 sm:items-start"}>
         <div className="w-full max-w-xs text-center sm:text-left">
           <Label>Do you own a vehicle?</Label>
           <div className="mt-2 flex flex-row items-center justify-center sm:justify-start gap-6">
-            <label className="inline-flex items-center gap-2">
-              <input type="radio" name="ownsCar" value="no" checked={data.ownsCar === "no"} onChange={() => setData({ ...data, ownsCar: "no" })} />
-              <span>No</span>
-            </label>
-            <label className="inline-flex items-center gap-2">
-              <input type="radio" name="ownsCar" value="yes" checked={data.ownsCar === "yes"} onChange={() => setData({ ...data, ownsCar: "yes" })} />
-              <span>Yes</span>
-            </label>
+            <label className="inline-flex items-center gap-2"><input type="radio" name="ownsCar" value="no" checked={data.ownsCar === "no"} onChange={() => setData({ ...data, ownsCar: "no" })} /><span>No</span></label>
+            <label className="inline-flex items-center gap-2"><input type="radio" name="ownsCar" value="yes" checked={data.ownsCar === "yes"} onChange={() => setData({ ...data, ownsCar: "yes" })} /><span>Yes</span></label>
           </div>
         </div>
         <div className="w-full max-w-xs text-center sm:text-left">
           <Label>Do you live in a household with a vehicle?</Label>
           <div className="mt-2 flex flex-row items-center justify-center sm:justify-start gap-6">
-            <label className="inline-flex items-center gap-2">
-              <input type="radio" name="householdVehicle" value="no" checked={data.householdVehicle === "no"} onChange={() => setData({ ...data, householdVehicle: "no" })} />
-              <span>No</span>
-            </label>
-            <label className="inline-flex items-center gap-2">
-              <input type="radio" name="householdVehicle" value="yes" checked={data.householdVehicle === "yes"} onChange={() => setData({ ...data, householdVehicle: "yes" })} />
-              <span>Yes</span>
-            </label>
+            <label className="inline-flex items-center gap-2"><input type="radio" name="householdVehicle" value="no" checked={data.householdVehicle === "no"} onChange={() => setData({ ...data, householdVehicle: "no" })} /><span>No</span></label>
+            <label className="inline-flex items-center gap-2"><input type="radio" name="householdVehicle" value="yes" checked={data.householdVehicle === "yes"} onChange={() => setData({ ...data, householdVehicle: "yes" })} /><span>Yes</span></label>
           </div>
         </div>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}>
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
-          </Button>
-          <Button style={bg(THEME.primary)} disabled={ineligible} aria-disabled={ineligible} onClick={() => { if (ineligible) return; next(); }}>
-            Continue
-          </Button>
+          <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+          <Button style={bg(THEME.primary)} disabled={ineligible} aria-disabled={ineligible} onClick={() => { if (ineligible) return; next(); }}>Continue</Button>
         </div>
-        {ineligible && (
-          <p className="text-sm text-red-600">In order to qualify for a Non-Owners Policy you cannot own a vehicle or live in a household with a vehicle</p>
-        )}
+        {ineligible && (<p className="text-sm text-red-600">In order to qualify for a Non-Owners Policy you cannot own a vehicle or live in a household with a vehicle</p>)}
       </div>
     </div>
   );
@@ -212,43 +170,18 @@ const EligibilityStep = ({ data, setData, next, back, forceStack = false }) => {
 
 const PersonalStep = ({ data, setData, next, back }) => (
   <div className="space-y-6">
-    <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>
-      About you
-    </h3>
+    <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>About you</h3>
     <div className="grid sm:grid-cols-2 gap-4">
-      <div>
-        <Label>First name</Label>
-        <Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.first} onChange={(e) => setData({ ...data, first: e.target.value })} />
-      </div>
-      <div>
-        <Label>Last name</Label>
-        <Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.last} onChange={(e) => setData({ ...data, last: e.target.value })} />
-      </div>
-      <div className="sm:col-span-2">
-        <Label>Street Address</Label>
-        <Input placeholder="123 Main St" value={data.street || ""} onChange={(e) => setData({ ...data, street: e.target.value })} />
-      </div>
-      <div>
-        <Label>City</Label>
-        <Input placeholder="Raleigh" value={data.city || ""} onChange={(e) => setData({ ...data, city: e.target.value })} />
-      </div>
-      <div>
-        <Label>State</Label>
-        <Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.state || "NC"} disabled />
-      </div>
-      <div>
-        <Label>Zip</Label>
-        <Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" placeholder="28801" value={data.zip} onChange={(e) => setData({ ...data, zip: e.target.value })} />
-      </div>
+      <div><Label>First name</Label><Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.first} onChange={(e) => setData({ ...data, first: e.target.value })} /></div>
+      <div><Label>Last name</Label><Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.last} onChange={(e) => setData({ ...data, last: e.target.value })} /></div>
+      <div className="sm:col-span-2"><Label>Street Address</Label><Input placeholder="123 Main St" value={data.street || ""} onChange={(e) => setData({ ...data, street: e.target.value })} /></div>
+      <div><Label>City</Label><Input placeholder="Raleigh" value={data.city || ""} onChange={(e) => setData({ ...data, city: e.target.value })} /></div>
+      <div><Label>State</Label><Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.state || "NC"} disabled /></div>
+      <div><Label>Zip</Label><Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" placeholder="28801" value={data.zip} onChange={(e) => setData({ ...data, zip: e.target.value })} /></div>
     </div>
     <div className="flex items-center gap-3">
-      <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}>
-        <ArrowLeft className="w-4 h-4 mr-1" />
-        Back
-      </Button>
-      <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>
-        Continue
-      </Button>
+      <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+      <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>Continue</Button>
     </div>
   </div>
 );
@@ -258,18 +191,10 @@ const ContactStep = ({ data, setData, next, back }) => {
   const onContinue = () => { if (!agree) return; setData({ ...data, consentAgreed: true }); next(); };
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>
-        Contact information
-      </h3>
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Contact information</h3>
       <div className="grid sm:grid-cols-2 gap-4">
-        <div>
-          <Label>Email</Label>
-          <Input type="email" placeholder="you@example.com" value={data.email || ""} onChange={(e) => setData({ ...data, email: e.target.value })} />
-        </div>
-        <div>
-          <Label>Phone</Label>
-          <Input type="tel" placeholder="(555) 555-5555" value={data.phone || ""} onChange={(e) => setData({ ...data, phone: e.target.value })} />
-        </div>
+        <div><Label>Email</Label><Input type="email" placeholder="you@example.com" value={data.email || ""} onChange={(e) => setData({ ...data, email: e.target.value })} /></div>
+        <div><Label>Phone</Label><Input type="tel" placeholder="(555) 555-5555" value={data.phone || ""} onChange={(e) => setData({ ...data, phone: e.target.value })} /></div>
         <div className="sm:col-span-2">
           <label className="flex items-start gap-3 text-sm text-gray-700">
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1" />
@@ -278,13 +203,8 @@ const ContactStep = ({ data, setData, next, back }) => {
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}>
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Back
-        </Button>
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} disabled={!agree} aria-disabled={!agree} onClick={onContinue}>
-          Agree and Continue
-        </Button>
+        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} disabled={!agree} aria-disabled={!agree} onClick={onContinue}>Agree and Continue</Button>
       </div>
     </div>
   );
@@ -296,14 +216,9 @@ const LicenseStep = ({ data, setData, next, back }) => {
   const askNumState = askAge || status === "Permit";
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>
-        License
-      </h3>
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>License</h3>
       <div className="grid sm:grid-cols-2 gap-4">
-        <div>
-          <Label>Date of Birth</Label>
-          <Input type="date" value={data.dob || ""} onChange={(e) => setData({ ...data, dob: e.target.value })} />
-        </div>
+        <div><Label>Date of Birth</Label><Input type="date" value={data.dob || ""} onChange={(e) => setData({ ...data, dob: e.target.value })} /></div>
         <div>
           <Label>Gender</Label>
           <select className="w-full border rounded-md h-10 px-3 focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.gender || ""} onChange={(e) => setData({ ...data, gender: e.target.value })}>
@@ -333,25 +248,14 @@ const LicenseStep = ({ data, setData, next, back }) => {
         )}
         {askNumState && (
           <>
-            <div>
-              <Label>License number</Label>
-              <Input placeholder="ABC123456" value={data.license} onChange={(e) => setData({ ...data, license: e.target.value.toUpperCase() })} />
-            </div>
-            <div>
-              <Label>Issuing state</Label>
-              <Input placeholder="NC" value={data.licState} onChange={(e) => setData({ ...data, licState: e.target.value.toUpperCase().slice(0, 2) })} />
-            </div>
+            <div><Label>License number</Label><Input placeholder="ABC123456" value={data.license} onChange={(e) => setData({ ...data, license: e.target.value.toUpperCase() })} /></div>
+            <div><Label>Issuing state</Label><Input placeholder="NC" value={data.licState} onChange={(e) => setData({ ...data, licState: e.target.value.toUpperCase().slice(0, 2) })} /></div>
           </>
         )}
       </div>
       <div className="flex items-center gap-3">
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}>
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Back
-        </Button>
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>
-          Continue
-        </Button>
+        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>Continue</Button>
       </div>
     </div>
   );
@@ -368,14 +272,8 @@ const HistoryStep = ({ data, setData, next, back }) => {
         <div className="w-full max-w-xs text-center sm:text-left">
           <Label>Do you have any traffic violations in the past 5 years?</Label>
           <div className="mt-2 flex flex-row items-center justify-center sm:justify-start gap-6">
-            <label className="inline-flex items-center gap-2">
-              <input type="radio" name="hasViolations" value="no" checked={data.hasViolations === "no"} onChange={() => setData({ ...data, hasViolations: "no", violationType: "" })} />
-              <span>No</span>
-            </label>
-            <label className="inline-flex items-center gap-2">
-              <input type="radio" name="hasViolations" value="yes" checked={data.hasViolations === "yes"} onChange={() => setData({ ...data, hasViolations: "yes" })} />
-              <span>Yes</span>
-            </label>
+            <label className="inline-flex items-center gap-2"><input type="radio" name="hasViolations" value="no" checked={data.hasViolations === "no"} onChange={() => setData({ ...data, hasViolations: "no", violationType: "" })} /><span>No</span></label>
+            <label className="inline-flex items-center gap-2"><input type="radio" name="hasViolations" value="yes" checked={data.hasViolations === "yes"} onChange={() => setData({ ...data, hasViolations: "yes" })} /><span>Yes</span></label>
           </div>
           {showViolations && (
             <div className="mt-3">
@@ -390,14 +288,8 @@ const HistoryStep = ({ data, setData, next, back }) => {
         <div className="w-full max-w-xs text-center sm:text-left">
           <Label>Have you been involved in an accident in the last 5 years?</Label>
           <div className="mt-2 flex flex-row items-center justify-center sm:justify-start gap-6">
-            <label className="inline-flex items-center gap-2">
-              <input type="radio" name="hasAccidents" value="no" checked={data.hasAccidents === "no"} onChange={() => setData({ ...data, hasAccidents: "no", accidentType: "" })} />
-              <span>No</span>
-            </label>
-            <label className="inline-flex items-center gap-2">
-              <input type="radio" name="hasAccidents" value="yes" checked={data.hasAccidents === "yes"} onChange={() => setData({ ...data, hasAccidents: "yes" })} />
-              <span>Yes</span>
-            </label>
+            <label className="inline-flex items-center gap-2"><input type="radio" name="hasAccidents" value="no" checked={data.hasAccidents === "no"} onChange={() => setData({ ...data, hasAccidents: "no", accidentType: "" })} /><span>No</span></label>
+            <label className="inline-flex items-center gap-2"><input type="radio" name="hasAccidents" value="yes" checked={data.hasAccidents === "yes"} onChange={() => setData({ ...data, hasAccidents: "yes" })} /><span>Yes</span></label>
           </div>
           {showAccidents && (
             <div className="mt-3">
@@ -419,121 +311,124 @@ const HistoryStep = ({ data, setData, next, back }) => {
 };
 
 const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
-  const [pkg, setPkg] = useState(data.coveragePackage || "stateMin");
-  const [open, setOpen] = useState(false);
-  const applyPkg = (which) => (which === "stateMin" ? { coveragePackage: "stateMin", biPerPerson: 50000, biPerAccident: 100000, pdPerAccident: 50000, umPerPerson: 50000, umPerAccident: 100000, biLimit: 50000, umLimit: 50000 } : { coveragePackage: "high", biPerPerson: 100000, biPerAccident: 300000, pdPerAccident: 50000, umPerPerson: 100000, umPerAccident: 300000, biLimit: 100000, umLimit: 100000 });
-  const selected = applyPkg(pkg);
-  const calcMonthly = useMemo(() => priceQuote({ state: data.state || "NC", sr22: data.sr22, age: data.age || 30, biLimit: selected.biLimit, umLimit: selected.umLimit }), [data.state, data.sr22, data.age, selected.biLimit, selected.umLimit]);
-  const monthly = isMobile ? 46.8 : calcMonthly;
+  const [tab, setTab] = useState('basic');
+  const [customLimits, setCustomLimits] = useState('50/100/50');
+  const limitsMap = {
+    '50/100/50': { coveragePackage: 'stateMin', biPerPerson: 50000, biPerAccident: 100000, pdPerAccident: 50000, umPerPerson: 50000, umPerAccident: 100000, biLimit: 50000, umLimit: 50000 },
+    '100/300/50': { coveragePackage: 'high', biPerPerson: 100000, biPerAccident: 300000, pdPerAccident: 50000, umPerPerson: 100000, umPerAccident: 300000, biLimit: 100000, umLimit: 100000 },
+  };
+  const selectedPkg = tab === 'basic' ? limitsMap['50/100/50'] : tab === 'plus' ? limitsMap['100/300/50'] : limitsMap[customLimits];
+  const monthlyCalc = useMemo(() => priceQuote({ state: data.state || 'NC', sr22: data.sr22, age: data.age || 30, biLimit: selectedPkg.biLimit, umLimit: selectedPkg.umLimit }), [data.state, data.sr22, data.age, selectedPkg.biLimit, selectedPkg.umLimit]);
+  const monthly = isMobile ? 46.8 : monthlyCalc;
   const sixMonth = (monthly * 6).toFixed(2);
-  if (isMobile) {
-    return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Choose Your Coverage</h3>
-        <Card>
-          <CardContent className="p-6 text-center space-y-3">
-            <div className="text-sm text-gray-500">Due Today</div>
-            <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${monthly.toFixed(2)}</div>
-            <hr className="my-2" />
-            <div className="text-sm text-gray-600">6 Month Total Premium: ${sixMonth}</div>
-            <button className="text-sm font-semibold" style={color(THEME.primary)} onClick={() => setOpen(!open)}>{open ? "HIDE BREAKDOWN ▲" : "VIEW BREAKDOWN ▼"}</button>
-            {open && (
-              <div className="text-left pt-2 space-y-3">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="pkg" checked={pkg === "stateMin"} onChange={() => setPkg("stateMin")} />
-                    <span className="font-medium">State Minimum Limits (NC)</span>
-                  </label>
-                  <ul className="text-sm text-gray-600 list-disc pl-6">
-                    <li>Liability (BI/PD): 50/100/50</li>
-                    <li>UM/UIM (BI/PD): 50/100/50</li>
-                  </ul>
-                </div>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="pkg" checked={pkg === "high"} onChange={() => setPkg("high")} />
-                    <span className="font-medium">Higher Limits</span>
-                  </label>
-                  <ul className="text-sm text-gray-600 list-disc pl-6">
-                    <li>Liability (BI/PD): 100/300/50</li>
-                    <li>UM/UIM (BI/PD): 100/300/50</li>
-                  </ul>
-                </div>
-                <div className="pt-3 border-t">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Accident Protection Plan</div>
-                      <div className="text-xs text-gray-600">$10,000 per person, per accident</div>
-                    </div>
-                    <label className="inline-flex items-center gap-2">
-                      <input type="checkbox" checked={data.accidentPlan ?? true} onChange={(e) => { setData({ ...data, accidentPlan: e.target.checked }); setOpen(true); }} />
-                      <span className="text-sm">Add</span>
-                    </label>
-                  </div>
-                </div>
-                <hr className="my-3 border-0 border-t border-dashed border-gray-300/80" />
-                <p className="text-xs text-gray-500">Non-Owner Auto Insurance is secondary to the Vehicle Owner's policy and excludes Comprehensive/Collision Coverage.</p>
-              </div>
-            )}
-            <Button className="w-full" style={bg(THEME.primary)} onClick={() => { setData({ ...data, ...selected, monthly }); next(); }}>Continue</Button>
-          </CardContent>
-        </Card>
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+  const formatK = (n) => `$${Math.round(n / 1000)}K`;
+  const CoverageRows = (pkg) => (
+    <div className="space-y-3">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="font-semibold text-[13px]">Bodily Injury Liability</div>
+          <div className="text-[11px] text-gray-600">per person/per accident</div>
+        </div>
+        <div className="text-[13px] font-semibold">{formatK(pkg.biPerPerson)} / {formatK(pkg.biPerAccident)}</div>
       </div>
-    );
-  }
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="font-semibold text-[13px]">Property Damage Liability</div>
+          <div className="text-[11px] text-gray-600">per accident</div>
+        </div>
+        <div className="text-[13px] font-semibold">{formatK(pkg.pdPerAccident)}</div>
+      </div>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="font-semibold text-[13px]">Un/Underinsured Motorist</div>
+          <div className="font-semibold text-[13px]">Bodily Injury</div>
+          <div className="text-[11px] text-gray-600">per person/per accident</div>
+        </div>
+        <div className="text-[13px] font-semibold">{formatK(pkg.umPerPerson)} / {formatK(pkg.umPerAccident)}</div>
+      </div>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="font-semibold text-[13px]">Uninsured Motorist</div>
+          <div className="font-semibold text-[13px]">Property Damage</div>
+          <div className="text-[11px] text-gray-600">per accident</div>
+        </div>
+        <div className="text-[13px] font-semibold">{formatK(pkg.pdPerAccident)}</div>
+      </div>
+    </div>
+  );
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Choose Your Coverage</h3>
       <Card>
-        <CardContent className="p-6 text-center space-y-3">
-          <div className="text-sm text-gray-500">Due Today</div>
-          <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${monthly.toFixed(2)}</div>
-          <hr className="my-2" />
-          <div className="text-sm text-gray-600">6 Month Total Premium: ${sixMonth}</div>
-          <button className="text-sm font-semibold" style={color(THEME.primary)} onClick={() => setOpen(!open)}>{open ? "HIDE BREAKDOWN ▲" : "VIEW BREAKDOWN ▼"}</button>
-          {open && (
-            <div className="text-left pt-2 space-y-3">
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
-                  <input type="radio" name="pkg" checked={pkg === "stateMin"} onChange={() => setPkg("stateMin")} />
-                  <span className="font-medium">State Minimum Limits (NC)</span>
-                </label>
-                <ul className="text-sm text-gray-600 list-disc pl-6">
-                  <li>Liability (BI/PD): 50/100/50</li>
-                  <li>UM/UIM (BI/PD): 50/100/50</li>
-                </ul>
+        <CardContent className="p-6 space-y-4">
+          <div className="text-center space-y-2">
+            <div className="text-sm text-gray-500">Due Today</div>
+            <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${monthly.toFixed(2)}</div>
+            <div className="text-sm text-gray-600">6 Month Total Premium: ${sixMonth}</div>
+          </div>
+          {(() => {
+            const computeMonthly = (pkg) => (isMobile ? 46.8 : priceQuote({ state: data.state || 'NC', sr22: data.sr22, age: data.age || 30, biLimit: pkg.biLimit, umLimit: pkg.umLimit }));
+            const priceBasic = computeMonthly(limitsMap['50/100/50']);
+            const pricePlus = computeMonthly(limitsMap['100/300/50']);
+            const priceCustom = computeMonthly(limitsMap[customLimits]);
+            return (
+              <div className="mt-2 grid grid-cols-3 text-center text-sm rounded-md overflow-hidden border">
+                <button onClick={() => setTab('basic')} className={`py-2 px-3 bg-white border-r ${tab==='basic' ? 'border-t-2 border-t-[#f49646] font-semibold' : 'bg-gray-100'}`}>
+                  <div>Basic</div>
+                  <div className="text-xs text-gray-600">{tab==='basic' ? 'Selected' : `$${priceBasic.toFixed(2)}/mo`}</div>
+                </button>
+                <button onClick={() => setTab('plus')} className={`py-2 px-3 border-r ${tab==='plus' ? 'bg-white border-t-2 border-t-[#f49646] font-semibold' : 'bg-gray-100'}`}>
+                  <div>Plus</div>
+                  <div className="text-xs text-gray-600">{tab==='plus' ? 'Selected' : `$${pricePlus.toFixed(2)}/mo`}</div>
+                </button>
+                <button onClick={() => setTab('custom')} className={`py-2 px-3 ${tab==='custom' ? 'bg-white border-t-2 border-t-[#f49646] font-semibold' : 'bg-gray-100'}`}>
+                  <div>Custom</div>
+                  <div className="text-xs text-gray-600">{tab==='custom' ? 'Selected' : `$${priceCustom.toFixed(2)}/mo`}</div>
+                </button>
               </div>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
-                  <input type="radio" name="pkg" checked={pkg === "high"} onChange={() => setPkg("high")} />
-                  <span className="font-medium">Higher Limits</span>
-                </label>
-                <ul className="text-sm text-gray-600 list-disc pl-6">
-                  <li>Liability (BI/PD): 100/300/50</li>
-                  <li>UM/UIM (BI/PD): 100/300/50</li>
-                </ul>
-              </div>
-              <div className="pt-3 border-t">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Accident Protection Plan</div>
-                    <div className="text-xs text-gray-600">$10,000 per person, per accident</div>
-                  </div>
-                  <label className="inline-flex items-center gap-2">
-                    <input type="checkbox" checked={data.accidentPlan ?? true} onChange={(e) => { setData({ ...data, accidentPlan: e.target.checked }); setOpen(true); }} />
-                    <span className="text-sm">Add</span>
-                  </label>
+            );
+          })()}
+          {tab !== 'custom' && (
+            <div className="space-y-4">
+              {CoverageRows(selectedPkg)}
+              <label className="flex items-center justify-between gap-3 border rounded-lg p-3">
+                <div>
+                  <div className="font-medium">Accident Protection Plan</div>
+                  <div className="text-xs text-gray-600">$10,000 per person, per accident</div>
                 </div>
-              </div>
-              <hr className="my-3 border-0 border-t border-dashed border-gray-300/80" />
-              <p className="text-xs text-gray-500">Non-Owner Auto Insurance is secondary to the Vehicle Owner's policy and excludes Comprehensive/Collision Coverage.</p>
+                <input type="checkbox" checked={data.accidentPlan ?? true} onChange={(e) => setData({ ...data, accidentPlan: e.target.checked })} />
+              </label>
             </div>
           )}
-          <Button className="w-full" style={bg(THEME.primary)} onClick={() => { setData({ ...data, ...selected, monthly }); next(); }}>Continue</Button>
+          {tab === 'custom' && (
+            <div className="space-y-4 text-sm text-gray-700">
+              <div>
+                <Label>Liability Limits and UM/UIM</Label>
+                <select className="w-full border rounded-md h-10 px-3" value={customLimits} onChange={(e) => setCustomLimits(e.target.value)}>
+                  <option value="50/100/50">50/100/50</option>
+                  <option value="100/300/50">100/300/50</option>
+                </select>
+                <p className="text-xs text-gray-600 mt-1">Bodily Injury per person / Bodily Injury per accident / Property Damage per accident</p>
+              </div>
+              {CoverageRows(selectedPkg)}
+              <label className="flex items-center justify-between gap-3 border rounded-lg p-3 w-full">
+                <div>
+                  <div className="font-medium">Accident Protection Plan</div>
+                  <div className="text-xs text-gray-600">$10,000 per person, per accident</div>
+                </div>
+                <input type="checkbox" checked={data.accidentPlan ?? true} onChange={(e) => setData({ ...data, accidentPlan: e.target.checked })} />
+              </label>
+            </div>
+          )}
+          <div className="pt-2">
+            <p className="text-xs text-gray-500">Non-Owner Auto Insurance is secondary to the Vehicle Owner's policy and excludes Comprehensive and Collision Coverage.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3 pt-2">
+            <Button variant="ghost" className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+            <Button className="w-full transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={() => { const pkgOut = selectedPkg; setData({ ...data, ...pkgOut, monthly }); next(); }}>Continue</Button>
+          </div>
         </CardContent>
       </Card>
-      <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
     </div>
   );
 };
@@ -545,9 +440,7 @@ const SummaryStep = ({ back, data, setData }) => {
   const onChoose = (value) => { setPlan(value); if (setData) setData({ ...data, paymentPlan: value }); };
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>
-        Quote Summary
-      </h3>
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Quote Summary</h3>
       <Card>
         <CardContent className="p-6 space-y-4">
           <p className="text-sm text-gray-600"><span className="inline-flex items-center gap-1"><Check className="w-4 h-4" style={color(THEME.secondary)} /><span className="font-semibold">Almost there!</span></span> Based on the information you provided and the quote options you selected we can start your policy today for:</p>
@@ -582,7 +475,7 @@ const SummaryStep = ({ back, data, setData }) => {
           </div>
         </CardContent>
       </Card>
-<div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="secondary" onClick={back}>Back</Button>
         <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)}>{plan === "pif" ? "Pay in Full & Buy" : "Finalize Rate & Buy"}</Button>
       </div>
@@ -594,13 +487,9 @@ const TopBar = ({ isDesktop }) => (
   <div className="flex items-center justify-between mb-4">
     <BrandLogo height={28} src="/able-logo.svg" />
     {isDesktop ? (
-      <a href="tel:+19104524333" className="hidden sm:flex items-center gap-2 text-sm font-medium" style={color(THEME.secondary)}>
-        <Phone className="w-4 h-4" /> (910) 452-4333
-      </a>
+      <a href="tel:+19104524333" className="hidden sm:flex items-center gap-2 text-sm font-medium" style={color(THEME.secondary)}><Phone className="w-4 h-4" /> (910) 452-4333</a>
     ) : (
-      <a href="tel:+19104524333" className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm" style={{ ...bg(THEME.primary), color: "#ffffff" }}>
-        <Phone className="w-3.5 h-3.5" /> Call Now
-      </a>
+      <a href="tel:+19104524333" className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm" style={{ ...bg(THEME.primary), color: "#ffffff" }}><Phone className="w-3.5 h-3.5" /> Call Now</a>
     )}
   </div>
 );
@@ -611,24 +500,15 @@ function DesktopPreview() {
   const steps = ["Start", "Eligibility", "Personal", "Contact", "License", "History", "Coverage", "Summary"];
   const StepBody = () => {
     switch (step) {
-      case 0:
-        return <StartStep next={() => setStep(1)} />;
-      case 1:
-        return <EligibilityStep data={data} setData={setData} next={() => setStep(2)} back={() => setStep(0)} forceStack={false} />;
-      case 2:
-        return <PersonalStep data={data} setData={setData} next={() => setStep(3)} back={() => setStep(1)} />;
-      case 3:
-        return <ContactStep data={data} setData={setData} next={() => setStep(4)} back={() => setStep(2)} />;
-      case 4:
-        return <LicenseStep data={data} setData={setData} next={() => setStep(5)} back={() => setStep(3)} />;
-      case 5:
-        return <HistoryStep data={data} setData={setData} next={() => setStep(6)} back={() => setStep(4)} />;
-      case 6:
-        return <CoverageStep data={data} setData={setData} next={() => setStep(7)} back={() => setStep(5)} />;
-      case 7:
-        return <SummaryStep data={data} setData={setData} back={() => setStep(2)} />;
-      default:
-        return null;
+      case 0: return <StartStep next={() => setStep(1)} />;
+      case 1: return <EligibilityStep data={data} setData={setData} next={() => setStep(2)} back={() => setStep(0)} forceStack={false} />;
+      case 2: return <PersonalStep data={data} setData={setData} next={() => setStep(3)} back={() => setStep(1)} />;
+      case 3: return <ContactStep data={data} setData={setData} next={() => setStep(4)} back={() => setStep(2)} />;
+      case 4: return <LicenseStep data={data} setData={setData} next={() => setStep(5)} back={() => setStep(3)} />;
+      case 5: return <HistoryStep data={data} setData={setData} next={() => setStep(6)} back={() => setStep(4)} />;
+      case 6: return <CoverageStep data={data} setData={setData} next={() => setStep(7)} back={() => setStep(5)} />;
+      case 7: return <SummaryStep data={data} setData={setData} back={() => setStep(2)} />;
+      default: return null;
     }
   };
   return (
@@ -649,7 +529,7 @@ function DesktopPreview() {
               <aside className="hidden lg:block">
                 <Card className="sticky top-4">
                   <CardHeader>
-                    <CardTitle className="text	base" style={color(THEME.secondary)}>Fast facts</CardTitle>
+                    <CardTitle className="text-base" style={color(THEME.secondary)}>Fast facts</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 text-sm text-gray-600 space-y-3">
                     <div>Non-Owner Insurance may be required for North Carolina drivers to obtain for the the following:</div>
@@ -664,9 +544,7 @@ function DesktopPreview() {
             </div>
           </CardContent>
         </Card>
-        <div className="mt-6">
-          <PoweredBy />
-        </div>
+        <div className="mt-6"><PoweredBy /></div>
       </div>
     </div>
   );
@@ -678,43 +556,28 @@ function MobilePreview() {
   const steps = ["Start", "Eligibility", "Personal", "Contact", "License", "History", "Coverage", "Summary"];
   const StepBody = () => {
     switch (step) {
-      case 0:
-        return <StartStep next={() => setStep(1)} />;
-      case 1:
-        return <EligibilityStep data={data} setData={setData} next={() => setStep(2)} back={() => setStep(0)} forceStack={true} />;
-      case 2:
-        return <PersonalStep data={data} setData={setData} next={() => setStep(3)} back={() => setStep(1)} />;
-      case 3:
-        return <ContactStep data={data} setData={setData} next={() => setStep(4)} back={() => setStep(2)} />;
-      case 4:
-        return <LicenseStep data={data} setData={setData} next={() => setStep(5)} back={() => setStep(3)} />;
-      case 5:
-        return <HistoryStep data={data} setData={setData} next={() => setStep(6)} back={() => setStep(4)} />;
-      case 6:
-        return <CoverageStep data={data} setData={setData} next={() => setStep(7)} back={() => setStep(5)} isMobile={true} />;
-      case 7:
-        return <SummaryStep data={data} setData={setData} back={() => setStep(2)} />;
-      default:
-        return null;
+      case 0: return <StartStep next={() => setStep(1)} />;
+      case 1: return <EligibilityStep data={data} setData={setData} next={() => setStep(2)} back={() => setStep(0)} forceStack={true} />;
+      case 2: return <PersonalStep data={data} setData={setData} next={() => setStep(3)} back={() => setStep(1)} />;
+      case 3: return <ContactStep data={data} setData={setData} next={() => setStep(4)} back={() => setStep(2)} />;
+      case 4: return <LicenseStep data={data} setData={setData} next={() => setStep(5)} back={() => setStep(3)} />;
+      case 5: return <HistoryStep data={data} setData={setData} next={() => setStep(6)} back={() => setStep(4)} />;
+      case 6: return <CoverageStep data={data} setData={setData} next={() => setStep(7)} back={() => setStep(5)} isMobile={true} />;
+      case 7: return <SummaryStep data={data} setData={setData} back={() => setStep(2)} />;
+      default: return null;
     }
   };
   return (
     <div className="w-full flex justify-center p-4">
       <div className="relative h-[760px] w-[360px] rounded-[36px] border bg-white shadow-2xl overflow-hidden">
-        <div className="absolute inset-x-0 bottom-0 border-t bg-white/90 py-2 z-10">
-          <PoweredBy compact />
-        </div>
+        <div className="absolute inset-x-0 bottom-0 border-t bg-white/90 py-2 z-10"><PoweredBy compact /></div>
         <div className="absolute inset-x-0 top-0" style={{ ...bg(THEME.primary), height: "calc(48px + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", boxShadow: "0 1px 0 rgba(255,255,255,0.05), 0 1px 6px rgba(0,0,0,0.12)" }}>
           <div className="flex items-center justify-between px-4 py-2 text-white">
             <div className="font-semibold tracking-tight">Able Insurance Agency</div>
-            <a href="tel:+19104524333" className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "#ffffff" }}>
-              <Phone className="w-3.5 h-3.5" /> Call
-            </a>
+            <a href="tel:+19104524333" className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "#ffffff" }}><Phone className="w-3.5 h-3.5" /> Call</a>
           </div>
         </div>
-        <div className="absolute left-4 right-4 z-20" style={{ top: "calc(50px + env(safe-area-inset-top))" }}>
-          <StepsBar step={step} steps={steps} size="sm" />
-        </div>
+        <div className="absolute left-4 right-4 z-20" style={{ top: "calc(50px + env(safe-area-inset-top))" }}><StepsBar step={step} steps={steps} size="sm" /></div>
         <div className="p-4" style={{ paddingTop: "calc(80px + env(safe-area-inset-top))" }}>
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
@@ -730,12 +593,8 @@ function MobilePreview() {
 export default function AbleNonOwnerApp() {
   return (
     <div className="min-h-screen bg-white">
-      <div className="sm:hidden">
-        <MobilePreview />
-      </div>
-      <div className="hidden sm:block">
-        <DesktopPreview />
-      </div>
+      <div className="sm:hidden"><MobilePreview /></div>
+      <div className="hidden sm:block"><DesktopPreview /></div>
     </div>
   );
 }
