@@ -13,8 +13,8 @@ const border = (hex) => ({ borderColor: hex });
 const color = (hex) => ({ color: hex });
 
 const makeInitialState = () => ({
-  ownsCar: "no",
-  householdVehicle: "no",
+  ownsCar: "",
+  householdVehicle: "",
   sr22: false,
   age: 30,
   state: "NC",
@@ -477,7 +477,7 @@ const SummaryStep = ({ back, data, setData }) => {
       </Card>
       <div className="flex flex-col sm:flex-row gap-3">
         <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="secondary" onClick={back}>Back</Button>
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)}>{plan === "pif" ? "Pay in Full & Buy" : "Finalize Rate & Buy"}</Button>
+        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)}>Finalize Rate & Buy</Button>
       </div>
     </div>
   );
@@ -578,12 +578,14 @@ function MobilePreview() {
           </div>
         </div>
         <div className="absolute left-4 right-4 z-20" style={{ top: "calc(50px + env(safe-area-inset-top))" }}><StepsBar step={step} steps={steps} size="sm" /></div>
-        <div className="p-4" style={{ paddingTop: "calc(80px + env(safe-area-inset-top))" }}>
-          <AnimatePresence mode="wait">
-            <motion.div key={step} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
-              <StepBody />
-            </motion.div>
-          </AnimatePresence>
+        <div className="absolute inset-x-0" style={{ top: "calc(80px + env(safe-area-inset-top))", bottom: "56px", overflowY: "auto" }}>
+          <div className="p-4">
+            <AnimatePresence mode="wait">
+              <motion.div key={step} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+                <StepBody />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
