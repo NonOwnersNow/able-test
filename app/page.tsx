@@ -434,7 +434,7 @@ const SummaryStep = ({ back, data, setData, next }) => {
                 <p>Your rate may have changed due to a difference in your entered years of experience and driving history compared to your Motor Vehicle Report. For questions please call the number above.</p>
               </div>
               <div className="text-right mt-2">
-                <Button size="sm" variant="outline" onClick={() => setShowInfo(false)}>Close</Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowInfo(false)}>Close</Button>
               </div>
             </div>
           )}
@@ -527,7 +527,7 @@ const FinalizeSignStep = ({ back, next, data }) => {
                 <Button style={bg(THEME.primary)} onClick={() => { markSigned(activeDoc.id); setActiveDoc(null); }}>Sign</Button>
               )}
               {docs.find(d=>d.id===activeDoc.id)?.signed && (
-                <Button variant="outline" onClick={() => setActiveDoc(null)}>Done</Button>
+                <Button variant="secondary" onClick={() => setActiveDoc(null)}>Done</Button>
               )}
             </div>
           </div>
