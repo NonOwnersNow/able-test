@@ -161,7 +161,7 @@ const EligibilityStep = ({ data, setData, next, back, forceStack = false }) => {
         <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
         <Button style={bg(THEME.primary)} disabled={ineligible || unanswered} aria-disabled={ineligible || unanswered} onClick={() => { if (!ineligible && !unanswered) next(); }}>Continue</Button>
       </div>
-      {ineligible && (<p className="text-sm text-red-600">To qualify, you can’t own a vehicle or live in a household with one.</p>)}
+      {ineligible && (<p className="text-sm text-red-600">To qualify, you can't own a vehicle or live in a household with one.</p>)}
     </div>
   );
 };
@@ -267,7 +267,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
   const [customKey, setCustomKey] = useState(toKey(BASIC.bi));
   const [accProt, setAccProt] = useState(true);
   const current = tab==='basic' ? BASIC : tab==='plus' ? PLUS : (customKey===toKey(BASIC.bi) ? BASIC : PLUS);
-  const dueToday = current.monthly;
+  const dueToday = current.monthly + 30;
   const total6 = (current.monthly*6).toFixed(2);
   const Option = ({label, active, subtitle, onClick}) => (
     <button type="button" onClick={onClick} className={`flex-1 px-6 py-3 text-center border ${active? 'bg-white border-t-4':'bg-gray-100'} rounded-t-md`} style={active?{borderTopColor:'#f49646'}:{}}>
@@ -300,9 +300,9 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
           </div>
 
           <div className="mt-5 flex rounded-md overflow-hidden">
-            <Option label="Basic" active={tab==='basic'} subtitle="$46.80/mo" onClick={()=>setTab('basic')} />
-            <Option label="Plus" active={tab==='plus'} subtitle="$93.60/mo" onClick={()=>setTab('plus')} />
-            <Option label="Custom" active={tab==='custom'} subtitle={`$${dueToday.toFixed(2)}/mo`} onClick={()=>setTab('custom')} />
+            <Option label="Basic" active={tab==='basic'} subtitle="$46.80/mo" onClick={() => { setTab('basic'); setData && setData({ ...data, monthly: BASIC.monthly }); }} />
+            <Option label="Plus" active={tab==='plus'} subtitle="$93.60/mo" onClick={() => { setTab('plus'); setData && setData({ ...data, monthly: PLUS.monthly }); }} />
+            <Option label="Custom" active={tab==='custom'} subtitle={`$${dueToday.toFixed(2)}/mo`} onClick={() => { setTab('custom'); const m = (customKey===toKey(BASIC.bi)?BASIC.monthly:PLUS.monthly); setData && setData({ ...data, monthly: m }); }} />
           </div>
 
           <div className="mt-6 space-y-2 text-sm">
@@ -310,7 +310,7 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
               <div className="mb-4 grid sm:grid-cols-2 gap-3">
                 <div>
                   <Label>Liability Limits & UM/UIM (must match)</Label>
-                  <select className="w-full border rounded-md h-10 px-3 text-sm" value={customKey} onChange={(e)=>setCustomKey(e.target.value)}>
+                  <select className="w-full border rounded-md h-10 px-3 text-sm" value={customKey} onChange={(e)=>{ const v = e.target.value; setCustomKey(v); const m = (v===toKey(BASIC.bi)?BASIC.monthly:PLUS.monthly); setData && setData({ ...data, monthly: m }); }}>
                     <option value={toKey(BASIC.bi)}>Bodily Injury $50K/$100K & Property Damage $50K</option>
                     <option value={toKey(PLUS.bi)}>Bodily Injury $100K/$300K & Property Damage $50K</option>
                   </select>
@@ -396,8 +396,8 @@ const SummaryStep = ({ back, data, setData, next }) => {
                 <input type="radio" name="plan" value="monthly" checked={plan === "monthly"} onChange={() => onChoose("monthly")} className="mt-1" />
                 <div>
                   <div className="font-medium">Monthly Payments</div>
-                  <div className="text-sm text-gray-600">Due today: ${monthly.toFixed(2)}</div>
-                  <div className="text-xs text-gray-500">+ 5 monthly payments of ${monthly.toFixed(2)}</div>
+                  <div className="text-sm text-gray-600">Due today: ${(monthly + 30).toFixed(2)}</div>
+                  <div className="text-xs text-gray-500">+ 5 automatic monthly payments of ${monthly.toFixed(2)}</div>
                 </div>
               </div>
               <div className="text-right">
@@ -539,7 +539,11 @@ const FinalizeSignStep = ({ back, next, data }) => {
 
 const PaymentStep = ({ back, data }) => {
   const plan = (data && data.paymentPlan) || 'monthly';
-  const amount = plan === 'pif' ? 280.8 : 46.8;
+  const baseMonthly = (data && typeof data.monthly === 'number') ? data.monthly : 46.8;
+  const pifTotal = 280.8;
+  const amount = (plan === 'pif' ? pifTotal : baseMonthly) + 30;
+  const [agreeAuto, setAgreeAuto] = useState(plan !== 'monthly');
+  useEffect(() => { setAgreeAuto(plan !== 'monthly'); }, [plan]);
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Payment</h3>
@@ -547,10 +551,22 @@ const PaymentStep = ({ back, data }) => {
         <CardContent className="p-6 space-y-4">
           <div className="text-sm text-gray-600">Amount due today</div>
           <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${amount.toFixed(2)}</div>
-          <div className="text-xs text-gray-500">This is a demo payment screen.</div>
+
+          {plan === 'monthly' ? (
+            <div className="space-y-3 text-sm text-gray-700">
+              <div>+ 5 automatic monthly payments of ${baseMonthly.toFixed(2)}</div>
+              <label className="flex items-start gap-3 text-xs text-gray-800">
+                <input type="checkbox" className="mt-0.5" checked={agreeAuto} onChange={(e)=>setAgreeAuto(e.target.checked)} />
+                <span>
+                  I agree to the <a className="underline" href="#">automatic payment terms and conditions</a> and authorize Greenville Casualty Insurance to save the card information provided to automatically deduct my monthly payments.
+                </span>
+              </label>
+            </div>
+          ) : null}
+
           <div className="pt-2 flex gap-3">
             <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
-            <Button style={bg(THEME.primary)}>Pay Now</Button>
+            <Button style={bg(THEME.primary)} disabled={plan === 'monthly' && !agreeAuto} aria-disabled={plan === 'monthly' && !agreeAuto}>Pay Now</Button>
           </div>
         </CardContent>
       </Card>
