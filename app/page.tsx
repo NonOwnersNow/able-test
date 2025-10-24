@@ -627,8 +627,9 @@ const PaymentStep = ({ back, data }) => {
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Payment</h3>
       <Card>
         <CardContent className="p-6 space-y-4">
-          <div className="text-sm text-gray-600">Amount due today</div>
           <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${amount.toFixed(2)}</div>
+
+          <div className="text-xs text-gray-500">Includes a Fully Earned $30 Policy Fee.</div>
 
           {plan === 'monthly' ? (
             <div className="space-y-3 text-sm text-gray-700">
