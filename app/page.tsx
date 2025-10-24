@@ -50,25 +50,14 @@ const makeInitialState = () => ({
 });
 
 const BrandLogo = ({ className = "", height = 24, src }) => {
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const showImage = loaded && !failed;
   return (
-    <div className={`flex items-center ${className}`} style={{ height }}>
-      {!failed && (
-        <img
-          src={src || "/able-logo.svg"}
-          alt="Able Insurance Agency"
-          className="block h-full w-auto"
-          onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
-        />
-      )}
-      {!showImage && (
-        <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>
-          Able Insurance Agency
-        </div>
-      )}
+    <div className={`flex items-center ${className}`} style={{ height }} aria-label="Able Insurance Agency">
+      <img
+        src={src || "/able-logo.svg"}
+        alt="Able Insurance Agency"
+        className="block h-full w-auto"
+        draggable={false}
+      />
     </div>
   );
 };
