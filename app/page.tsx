@@ -35,7 +35,7 @@ const makeInitialState = () => ({
   pdPerAccident: 50000,
   umPerPerson: 50000,
   umPerAccident: 100000,
-  monthly: 28,
+  monthly: 46.8,
   dob: "",
   gender: "",
   firstLicensedAge: "",
@@ -45,8 +45,9 @@ const makeInitialState = () => ({
   hasAccidents: "no",
   accidentType: "",
   accidentPlan: true,
-  coveragePackage: "stateMin",
+  coveragePackage: "basic",
   paymentPlan: "monthly",
+  startDate: new Date().toISOString().split('T')[0],
 });
 
 const BrandLogo = ({ className = "", height = 24, src }) => {
@@ -135,26 +136,80 @@ const StartStep = ({ next }) => (
   </div>
 );
 
+// Reusable Yes/No block selector
+const YesNoBlocks = ({ value, onChange, name, size = "md" }) => {
+  const isSm = size === "sm";
+  const btnBase = isSm
+    ? "h-8 px-2 py-1 text-[11px]"
+    : "h-9 px-3 py-2 text-xs";
+  const gap = isSm ? "gap-1" : "gap-2";
+  const maxW = isSm ? "max-w-[180px]" : "max-w-xs";
+  const Btn = ({ v, label }) => (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={value === v}
+      onClick={() => onChange(v)}
+      className={`inline-flex items-center justify-center w-full rounded-lg border ${btnBase} font-medium transition ${value === v ? 'ring-2' : ''}`}
+      style={value === v ? border(THEME.primary) : {}}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div className={`mt-2 grid grid-cols-2 ${gap} ${maxW}`} role="radiogroup" aria-label={name}>
+      <Btn v="no" label="No" />
+      <Btn v="yes" label="Yes" />
+    </div>
+  );
+};
+
 const EligibilityStep = ({ data, setData, next, back, forceStack = false }) => {
+  // Default start date to today if not set
+  useEffect(() => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (!data.startDate) {
+      setData({ ...data, startDate: todayStr });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const today = useMemo(() => new Date(), []);
+  const fmt = (d) => d.toISOString().split('T')[0];
+  const minDate = fmt(today);
+  const maxDate = fmt(new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000));
+  const start = data.startDate || "";
+  const hasStart = !!start;
+  const invalidDate = hasStart && (start < minDate || start > maxDate);
   const ineligible = data.ownsCar === "yes" || data.householdVehicle === "yes";
-  const unanswered = !data.ownsCar || !data.householdVehicle;
+  const unanswered = !hasStart || !data.ownsCar || !data.householdVehicle || invalidDate;
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Eligibility</h3>
+
+      <div className="w-full max-w-xs">
+        <Label>When would you like this policy to start?</Label>
+        <Input
+          type="date"
+          min={minDate}
+          max={maxDate}
+          value={start}
+          onChange={(e)=> setData({ ...data, startDate: e.target.value })}
+          className="mt-2"
+        />
+        {invalidDate && (
+          <p className="text-xs text-red-600 mt-2">Please choose today ({minDate}) or a date within 30 days (by {maxDate}).</p>
+        )}
+      </div>
+
       <div className={forceStack ? "flex flex-col items-center gap-8" : "flex flex-col items-center gap-8 sm:grid sm:grid-cols-2 sm:items-start"}>
         <div className="w-full max-w-xs text-center sm:text-left">
           <Label>Do you own a vehicle?</Label>
-          <div className="mt-2 flex items-center justify-center sm:justify-start gap-6">
-            <label className="inline-flex items-center gap-2"><input type="radio" name="ownsCar" value="no" checked={data.ownsCar === "no"} onChange={() => setData({ ...data, ownsCar: "no" })} /><span>No</span></label>
-            <label className="inline-flex items-center gap-2"><input type="radio" name="ownsCar" value="yes" checked={data.ownsCar === "yes"} onChange={() => setData({ ...data, ownsCar: "yes" })} /><span>Yes</span></label>
-          </div>
+          <YesNoBlocks name="Do you own a vehicle?" value={data.ownsCar} onChange={(v) => setData({ ...data, ownsCar: v })} />
         </div>
         <div className="w-full max-w-xs text-center sm:text-left">
           <Label>Do you live in a household with a vehicle?</Label>
-          <div className="mt-2 flex items-center justify-center sm:justify-start gap-6">
-            <label className="inline-flex items-center gap-2"><input type="radio" name="householdVehicle" value="no" checked={data.householdVehicle === "no"} onChange={() => setData({ ...data, householdVehicle: "no" })} /><span>No</span></label>
-            <label className="inline-flex items-center gap-2"><input type="radio" name="householdVehicle" value="yes" checked={data.householdVehicle === "yes"} onChange={() => setData({ ...data, householdVehicle: "yes" })} /><span>Yes</span></label>
-          </div>
+          <YesNoBlocks name="Do you live in a household with a vehicle?" value={data.householdVehicle} onChange={(v) => setData({ ...data, householdVehicle: v })} />
         </div>
       </div>
       <div className="flex items-center gap-3">
@@ -208,30 +263,42 @@ const ContactStep = ({ data, setData, next, back }) => {
   );
 };
 
-const LicenseStep = ({ data, setData, next, back }) => (
-  <div className="space-y-6">
-    <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>License</h3>
-    <div className="grid sm:grid-cols-2 gap-4">
-      <div><Label>Date of Birth</Label><Input type="date" value={data.dob || ""} onChange={(e) => setData({ ...data, dob: e.target.value })} /></div>
-      <div>
-        <Label>License Status</Label>
-        <select className="w-full border rounded-md h-10 px-3" value={data.licenseStatus || ""} onChange={(e) => setData({ ...data, licenseStatus: e.target.value })}>
-          <option value="">Select status...</option>
-          <option value="Never Licensed">Never Licensed</option>
-          <option value="Active">Active</option>
-          <option value="Suspended/Revoked">Suspended/Revoked</option>
-          <option value="Permit">Permit</option>
-        </select>
+const LicenseStep = ({ data, setData, next, back }) => {
+  const status = data.licenseStatus || "";
+  const showNumAndState = status === 'Active' || status === 'Suspended/Revoked' || status === 'Permit';
+  const showFirstLicensedAge = status === 'Active' || status === 'Suspended/Revoked';
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>License</h3>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div><Label>Date of Birth</Label><Input type="date" value={data.dob || ""} onChange={(e) => setData({ ...data, dob: e.target.value })} /></div>
+        <div>
+          <Label>License Status</Label>
+          <select className="w-full border rounded-md h-10 px-3" value={status} onChange={(e) => setData({ ...data, licenseStatus: e.target.value })}>
+            <option value="">Select status...</option>
+            <option value="Never Licensed">Never Licensed</option>
+            <option value="Active">Active</option>
+            <option value="Suspended/Revoked">Suspended/Revoked</option>
+            <option value="Permit">Permit</option>
+          </select>
+        </div>
+
+        {showNumAndState && (
+          <><div><Label>License Number</Label><Input value={data.license || ""} onChange={(e) => setData({ ...data, license: e.target.value })} /></div>
+          <div><Label>Issuing State</Label><Input value={data.licState || "NC"} onChange={(e) => setData({ ...data, licState: e.target.value })} /></div></>
+        )}
+
+        {showFirstLicensedAge && (
+          <div className="sm:col-span-2 max-w-xs"><Label>Age When First Licensed</Label><Input type="number" min={14} max={100} value={data.firstLicensedAge || ""} onChange={(e) => setData({ ...data, firstLicensedAge: e.target.value })} /></div>
+        )}
       </div>
-      <div><Label>License number</Label><Input value={data.license} onChange={(e) => setData({ ...data, license: e.target.value })} /></div>
-      <div><Label>Issuing state</Label><Input value={data.licState} onChange={(e) => setData({ ...data, licState: e.target.value })} /></div>
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+        <Button style={bg(THEME.primary)} onClick={next}>Continue</Button>
+      </div>
     </div>
-    <div className="flex items-center gap-3">
-      <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
-      <Button style={bg(THEME.primary)} onClick={next}>Continue</Button>
-    </div>
-  </div>
-);
+  );
+};
 
 const HistoryStep = ({ data, setData, next, back }) => (
   <div className="space-y-6">
@@ -239,17 +306,11 @@ const HistoryStep = ({ data, setData, next, back }) => (
     <div className="grid sm:grid-cols-2 gap-4">
       <div>
         <Label>Any traffic violations in the last 5 years?</Label>
-        <div className="mt-2 flex items-center gap-6">
-          <label className="inline-flex items-center gap-2"><input type="radio" name="hasViolations" value="no" checked={data.hasViolations === "no"} onChange={() => setData({ ...data, hasViolations: "no" })} /><span>No</span></label>
-          <label className="inline-flex items-center gap-2"><input type="radio" name="hasViolations" value="yes" checked={data.hasViolations === "yes"} onChange={() => setData({ ...data, hasViolations: "yes" })} /><span>Yes</span></label>
-        </div>
+        <YesNoBlocks name="Any traffic violations in the last 5 years?" value={data.hasViolations} onChange={(v) => setData({ ...data, hasViolations: v })} />
       </div>
       <div>
         <Label>Any accidents in the last 5 years?</Label>
-        <div className="mt-2 flex items-center gap-6">
-          <label className="inline-flex items-center gap-2"><input type="radio" name="hasAccidents" value="no" checked={data.hasAccidents === "no"} onChange={() => setData({ ...data, hasAccidents: "no" })} /><span>No</span></label>
-          <label className="inline-flex items-center gap-2"><input type="radio" name="hasAccidents" value="yes" checked={data.hasAccidents === "yes"} onChange={() => setData({ ...data, hasAccidents: "yes" })} /><span>Yes</span></label>
-        </div>
+        <YesNoBlocks name="Any accidents in the last 5 years?" value={data.hasAccidents} onChange={(v) => setData({ ...data, hasAccidents: v })} />
       </div>
     </div>
     <div className="flex items-center gap-3">
@@ -263,19 +324,31 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
   const BASIC = { label: 'Basic', bi: [50000,100000], pd: 50000, umbi: [50000,100000], umpd: 50000, monthly: 46.8 };
   const PLUS  = { label: 'Plus',  bi: [100000,300000], pd: 50000, umbi: [100000,300000], umpd: 50000, monthly: 93.6 };
   const toKey = (arr)=>`${arr[0]}/${arr[1]}`;
-  const [tab, setTab] = useState('basic');
+  const tab = (data && data.coveragePackage) ? data.coveragePackage : 'basic';
+  const setTab = (t) => { setData && setData({ ...data, coveragePackage: t }); };
   const [customKey, setCustomKey] = useState(toKey(BASIC.bi));
   const [accProt, setAccProt] = useState(true);
   const current = tab==='basic' ? BASIC : tab==='plus' ? PLUS : (customKey===toKey(BASIC.bi) ? BASIC : PLUS);
   const dueToday = current.monthly + 30;
   const total6 = (current.monthly*6).toFixed(2);
-  const Option = ({label, active, subtitle, onClick}) => (
-    <button type="button" onClick={onClick} className={`flex-1 px-6 py-3 text-center border ${active? 'bg-white border-t-4':'bg-gray-100'} rounded-t-md`} style={active?{borderTopColor:'#f49646'}:{}}>
-      <div className="font-semibold">{label}</div>
-      {subtitle && <div className="text-sm text-gray-600">{subtitle}</div>}
-      {active && <div className="text-xs text-gray-500">Selected</div>}
-    </button>
-  );
+
+  const Option = ({label, active, subtitle, onClick}) => {
+    return (
+      <button
+        type="button"
+        role="tab"
+        aria-selected={active}
+        onClick={() => onClick && onClick()}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick && onClick(); } }}
+        className={`basis-1/3 grow shrink min-w-0 box-border px-3 sm:px-6 py-3 text-center border ${active ? 'bg-white border-t-4' : 'bg-gray-100'} rounded-t-md cursor-pointer pointer-events-auto relative z-50 select-none`}
+        style={active ? { borderTopColor: '#f49646' } : {}}
+      >
+        <div className="font-semibold">{label}</div>
+        {subtitle && <div className="text-sm text-gray-600">{subtitle}</div>}
+        {active && <div className="text-xs text-gray-500">Selected</div>}
+      </button>
+    );
+  };
   const Row = ({left, right, sub}) => (
     <div className="flex items-start justify-between py-3 border-b last:border-b-0">
       <div>
@@ -292,25 +365,25 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
     <div className="space-y-6">
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Choose Your Coverage</h3>
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-6 overflow-x-hidden">
           <div className="text-center">
             <div className="text-sm text-gray-500">Due Today</div>
             <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${dueToday.toFixed(2)}</div>
             <div className="text-sm text-gray-600">6 Month Total Premium: {total6}</div>
           </div>
 
-          <div className="mt-5 flex rounded-md overflow-hidden">
-            <Option label="Basic" active={tab==='basic'} subtitle="$46.80/mo" onClick={() => { setTab('basic'); setData && setData({ ...data, monthly: BASIC.monthly }); }} />
-            <Option label="Plus" active={tab==='plus'} subtitle="$93.60/mo" onClick={() => { setTab('plus'); setData && setData({ ...data, monthly: PLUS.monthly }); }} />
-            <Option label="Custom" active={tab==='custom'} subtitle={`$${dueToday.toFixed(2)}/mo`} onClick={() => { setTab('custom'); const m = (customKey===toKey(BASIC.bi)?BASIC.monthly:PLUS.monthly); setData && setData({ ...data, monthly: m }); }} />
+          <div className="mt-5 flex w-full min-w-0 max-w-full box-border rounded-md overflow-hidden relative z-[60] pointer-events-auto">
+            <Option label="Basic" active={tab==='basic'} subtitle="$46.80/mo" onClick={() => { setData && setData({ ...data, coveragePackage: 'basic', monthly: BASIC.monthly }); }} />
+            <Option label="Plus" active={tab==='plus'} subtitle="$93.60/mo" onClick={() => { setData && setData({ ...data, coveragePackage: 'plus', monthly: PLUS.monthly }); }} />
+            <Option label="Custom" active={tab==='custom'} subtitle={`$${dueToday.toFixed(2)}/mo`} onClick={() => { const m = (customKey===toKey(BASIC.bi)?BASIC.monthly:PLUS.monthly); setData && setData({ ...data, coveragePackage: 'custom', monthly: m }); }} />
           </div>
 
-          <div className="mt-6 space-y-2 text-sm">
+          <div className="mt-6 space-y-2 text-sm relative z-0">
             {tab==='custom' && (
               <div className="mb-4 grid sm:grid-cols-2 gap-3">
                 <div>
                   <Label>Liability Limits & UM/UIM (must match)</Label>
-                  <select className="w-full border rounded-md h-10 px-3 text-sm" value={customKey} onChange={(e)=>{ const v = e.target.value; setCustomKey(v); const m = (v===toKey(BASIC.bi)?BASIC.monthly:PLUS.monthly); setData && setData({ ...data, monthly: m }); }}>
+                  <select className="w-full border rounded-md h-10 px-3 text-sm" value={customKey} onChange={(e)=>{ const v = e.target.value; setCustomKey(v); const m = (v===toKey(BASIC.bi)?BASIC.monthly:PLUS.monthly); setData && setData({ ...data, coveragePackage: 'custom', monthly: m }); }}>
                     <option value={toKey(BASIC.bi)}>Bodily Injury $50K/$100K & Property Damage $50K</option>
                     <option value={toKey(PLUS.bi)}>Bodily Injury $100K/$300K & Property Damage $50K</option>
                   </select>
@@ -379,8 +452,8 @@ const VerifyDrivingStep = ({ next, back }) => {
 };
 
 const SummaryStep = ({ back, data, setData, next }) => {
-  const monthly = 46.8;
-  const paidInFull = 280.8;
+  const monthly = (data && typeof data.monthly === 'number') ? data.monthly : 46.8;
+  const paidInFull = monthly * 6;
   const [plan, setPlan] = useState((data && data.paymentPlan) ? data.paymentPlan : "monthly");
   const [showInfo, setShowInfo] = useState(false);
   const onChoose = (value) => { setPlan(value); if (setData) setData({ ...data, paymentPlan: value }); };
@@ -421,25 +494,30 @@ const SummaryStep = ({ back, data, setData, next }) => {
           </div>
         </CardContent>
       </Card>
-      <div className="text-sm italic text-gray-600 flex items-center gap-2">
-        <span>Why did my rate change?</span>
-        <div className="relative inline-block">
-          <button aria-haspopup="dialog" aria-expanded={showInfo} aria-label="Why did my rate change?" onClick={() => setShowInfo(v => !v)} className="inline-flex items-center justify-center w-7 h-7 rounded-full border">
-            <Info className="w-4 h-4" />
-          </button>
-          {showInfo && (
-            <div role="dialog" className="absolute z-20 mt-2 w-80 max-w-[90vw] right-0 rounded-lg border bg-white shadow-lg p-3 text-xs not-italic">
-              <div className="flex items-start gap-2">
-                <div className="mt-0.5"><Info className="w-4 h-4" style={color(THEME.secondary)} /></div>
-                <p>Your rate may have changed due to a difference in your entered years of experience and driving history compared to your Motor Vehicle Report. For questions please call the number above.</p>
-              </div>
-              <div className="text-right mt-2">
-                <Button variant="ghost" onClick={() => setShowInfo(false)}>Close</Button>
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="text-sm italic text-gray-600 flex flex-col items-center gap-2 lg:hidden">
+        <button
+          aria-haspopup="dialog"
+          aria-expanded={showInfo}
+          onClick={() => setShowInfo(v => !v)}
+          className="inline-flex items-center gap-2 underline decoration-dotted underline-offset-4"
+        >
+          <span>Did your rate change?</span>
+          <Info className="w-4 h-4" />
+        </button>
       </div>
+      {showInfo && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 lg:hidden">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-4">
+            <div className="flex items-start gap-2 text-xs not-italic">
+              <div className="mt-0.5"><Info className="w-4 h-4" style={color(THEME.secondary)} /></div>
+              <p>Your rate may have changed due to a difference in your entered years of experience and driving history compared to your Motor Vehicle Report. For questions please call the number above.</p>
+            </div>
+            <div className="text-right mt-3">
+              <Button variant="ghost" onClick={() => setShowInfo(false)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row gap-3">
         <Button variant="secondary" onClick={back}>Back</Button>
         <Button style={bg(THEME.primary)} onClick={next}>Continue to Sign</Button>
@@ -611,31 +689,61 @@ function DesktopPreview() {
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
         <TopBar isDesktop />
         <Card className="shadow-lg rounded-2xl">
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-4 sm:p-6 overflow-x-hidden">
             <StepsBar step={step} steps={steps} />
-            <div className="mt-4 grid lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+            <div className={`mt-4 grid gap-6 ${(step===6 || step===7) ? '' : 'lg:grid-cols-3'}`}>
+              <div className={`${(step===6 || step===7) ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
                 <AnimatePresence mode="wait">
                   <motion.div key={step} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
                     <StepBody />
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <aside className="hidden lg:block">
+              {!(step===6 || step===7 || step===10) && (<aside className="hidden lg:block">
                 <Card className="sticky top-4">
-                  <CardHeader>
-                    <CardTitle className="text-base" style={color(THEME.secondary)}>Fast facts</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6 text-sm text-gray-600 space-y-3">
-                    <div>Non-Owner Insurance may be required for North Carolina drivers to obtain for the the following:</div>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>Acquire a North Carolina drivers license</li>
-                      <li>New NC residents who want to obtain a license</li>
-                      <li>To reinstate a suspended North Carolina license</li>
-                    </ul>
-                  </CardContent>
+                  {step===8 ? (
+                    <>
+                      <CardHeader>
+                        <CardTitle className="text-base" style={color(THEME.secondary)}>Did your rate change?</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6 text-sm text-gray-700 space-y-2">
+                        <p>Your rate may have changed due to a difference in your entered years of experience and driving history compared to your Motor Vehicle Report. For questions please call the number above.</p>
+                      </CardContent>
+                    </>
+                  ) : step===9 ? (
+                    <>
+                      <CardHeader>
+                        <CardTitle className="text-base" style={color(THEME.secondary)}>Need Proof of Insurance?</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6 text-sm text-gray-700 space-y-3">
+                        <p>Once you have signed your documents on this page and paid the initial payment on the next page your policy will be in force and your policy number will be instantly available to you.</p>
+                        <p>We will be sending you an email with your:</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                          <li>DL-123</li>
+                          <li>ID Cards</li>
+                          <li>Declaration Page</li>
+                          <li>and more!</li>
+                        </ul>
+                      </CardContent>
+                    </>
+                  ) : (
+                    <>
+                      <CardHeader>
+                        <CardTitle className="text-base" style={color(THEME.secondary)}>Fast facts</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6 text-sm text-gray-600 space-y-3">
+                        <div>Non-Owner Auto Insurance may be used by North Carolina drivers for some of the following reasons:</div>
+                        <ul className="list-disc pl-5 space-y-1">
+                          <li>Acquire a North Carolina Drivers License</li>
+                          <li>Reinstate a Suspended North Carolina Drivers License</li>
+                          <li>Drive a borrowed vehicle</li>
+                          <li>Drive a Rental or Car-Sharing Vehicle</li>
+                        </ul>
+                      </CardContent>
+                    </>
+                  )}
                 </Card>
-              </aside>
+              </aside>)}
             </div>
           </CardContent>
         </Card>
@@ -646,7 +754,6 @@ function DesktopPreview() {
 }
 
 function MobilePreview() {
-  // Minimal mobile wrapper — mirrors desktop for now
   return <DesktopPreview />;
 }
 
