@@ -1,7 +1,7 @@
 'use client';
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ArrowLeft, Shield, Phone, Car } from "lucide-react";
+import { Check, ArrowLeft, Shield, Phone, Car, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -56,10 +56,18 @@ const BrandLogo = ({ className = "", height = 24, src }) => {
   return (
     <div className={`flex items-center ${className}`} style={{ height }}>
       {!failed && (
-        <img src={src || "/able-logo.svg"} alt="Able Insurance Agency" className="block h-full w-auto" onLoad={() => setLoaded(true)} onError={() => setFailed(true)} />
+        <img
+          src={src || "/able-logo.svg"}
+          alt="Able Insurance Agency"
+          className="block h-full w-auto"
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+        />
       )}
       {!showImage && (
-        <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>Able Insurance Agency</div>
+        <div className="font-semibold tracking-tight" style={color(THEME.secondary)}>
+          Able Insurance Agency
+        </div>
       )}
     </div>
   );
@@ -100,17 +108,19 @@ const StepsBar = ({ step, steps, size = "md", className = "" }) => {
   );
 };
 
-function priceQuote({ state, sr22, age, biLimit, umLimit }) {
-  let base = 26;
-  const stateFactor = { NC: 1, SC: 1.05, GA: 1.12, VA: 1.08, TN: 0.98, FL: 1.22 };
-  const sf = stateFactor[state] ?? 1.1;
-  const sr = sr22 ? 1.35 : 1.0;
-  const ageAdj = age < 25 ? 1.25 : age < 35 ? 1.08 : age < 55 ? 1.0 : 0.95;
-  const limitAdj = (biLimit / 30000) * 0.6 + (umLimit / 30000) * 0.4;
-  const monthly = Math.round(base * sf * sr * ageAdj * limitAdj * 100) / 100;
-  return monthly < 18 ? 18 : monthly;
-}
+const TopBar = ({ isDesktop }) => (
+  <div className="flex items-center justify-between mb-4">
+    <BrandLogo height={28} src="/able-logo.svg" />
+    {isDesktop ? (
+      <a href="tel:+19104524333" className="hidden sm:flex items-center gap-2 text-sm font-medium" style={color(THEME.secondary)}><Phone className="w-4 h-4" /> (910) 452-4333</a>
+    ) : (
+      <a href="tel:+19104524333" className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm" style={{ ...bg(THEME.primary), color: "#ffffff" }}><Phone className="w-3.5 h-3.5" /> Call Now</a>
+    )}
+  </div>
+);
 
+
+// --- Minimal step components to restore app ---
 const StartStep = ({ next }) => (
   <div className="space-y-6">
     <div className="flex items-center gap-3">
@@ -118,52 +128,51 @@ const StartStep = ({ next }) => (
         <Shield className="w-6 h-6" style={color(THEME.secondary)} />
       </div>
       <div>
-        <h2 className="text-xl font-semibold" style={color(THEME.secondary)}>
+        <h2 className="text-2xl font-semibold leading-tight" style={color(THEME.secondary)}>
           Non-Owner Auto
           <br />
           Insurance Quote
         </h2>
       </div>
     </div>
-    <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
+    <ul className="list-disc pl-6 space-y-2 text-gray-700">
       <li>Liability coverage that travels with you</li>
       <li>DL-123 form available (if required)</li>
       <li>Instant, online policy</li>
     </ul>
     <div>
-      <Button className="w-full sm:w-auto transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>Start your quote</Button>
+      <Button className="w-full sm:w-auto" style={bg(THEME.primary)} onClick={next}>Start your quote</Button>
     </div>
   </div>
 );
 
 const EligibilityStep = ({ data, setData, next, back, forceStack = false }) => {
   const ineligible = data.ownsCar === "yes" || data.householdVehicle === "yes";
+  const unanswered = !data.ownsCar || !data.householdVehicle;
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Eligibility</h3>
       <div className={forceStack ? "flex flex-col items-center gap-8" : "flex flex-col items-center gap-8 sm:grid sm:grid-cols-2 sm:items-start"}>
         <div className="w-full max-w-xs text-center sm:text-left">
           <Label>Do you own a vehicle?</Label>
-          <div className="mt-2 flex flex-row items-center justify-center sm:justify-start gap-6">
+          <div className="mt-2 flex items-center justify-center sm:justify-start gap-6">
             <label className="inline-flex items-center gap-2"><input type="radio" name="ownsCar" value="no" checked={data.ownsCar === "no"} onChange={() => setData({ ...data, ownsCar: "no" })} /><span>No</span></label>
             <label className="inline-flex items-center gap-2"><input type="radio" name="ownsCar" value="yes" checked={data.ownsCar === "yes"} onChange={() => setData({ ...data, ownsCar: "yes" })} /><span>Yes</span></label>
           </div>
         </div>
         <div className="w-full max-w-xs text-center sm:text-left">
           <Label>Do you live in a household with a vehicle?</Label>
-          <div className="mt-2 flex flex-row items-center justify-center sm:justify-start gap-6">
+          <div className="mt-2 flex items-center justify-center sm:justify-start gap-6">
             <label className="inline-flex items-center gap-2"><input type="radio" name="householdVehicle" value="no" checked={data.householdVehicle === "no"} onChange={() => setData({ ...data, householdVehicle: "no" })} /><span>No</span></label>
             <label className="inline-flex items-center gap-2"><input type="radio" name="householdVehicle" value="yes" checked={data.householdVehicle === "yes"} onChange={() => setData({ ...data, householdVehicle: "yes" })} /><span>Yes</span></label>
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
-          <Button style={bg(THEME.primary)} disabled={ineligible} aria-disabled={ineligible} onClick={() => { if (ineligible) return; next(); }}>Continue</Button>
-        </div>
-        {ineligible && (<p className="text-sm text-red-600">In order to qualify for a Non-Owners Policy you cannot own a vehicle or live in a household with a vehicle</p>)}
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+        <Button style={bg(THEME.primary)} disabled={ineligible || unanswered} aria-disabled={ineligible || unanswered} onClick={() => { if (!ineligible && !unanswered) next(); }}>Continue</Button>
       </div>
+      {ineligible && (<p className="text-sm text-red-600">To qualify, you can’t own a vehicle or live in a household with one.</p>)}
     </div>
   );
 };
@@ -172,16 +181,16 @@ const PersonalStep = ({ data, setData, next, back }) => (
   <div className="space-y-6">
     <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>About you</h3>
     <div className="grid sm:grid-cols-2 gap-4">
-      <div><Label>First name</Label><Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.first} onChange={(e) => setData({ ...data, first: e.target.value })} /></div>
-      <div><Label>Last name</Label><Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.last} onChange={(e) => setData({ ...data, last: e.target.value })} /></div>
-      <div className="sm:col-span-2"><Label>Street Address</Label><Input placeholder="123 Main St" value={data.street || ""} onChange={(e) => setData({ ...data, street: e.target.value })} /></div>
-      <div><Label>City</Label><Input placeholder="Raleigh" value={data.city || ""} onChange={(e) => setData({ ...data, city: e.target.value })} /></div>
-      <div><Label>State</Label><Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.state || "NC"} disabled /></div>
-      <div><Label>Zip</Label><Input className="focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" placeholder="28801" value={data.zip} onChange={(e) => setData({ ...data, zip: e.target.value })} /></div>
+      <div><Label>First name</Label><Input value={data.first} onChange={(e) => setData({ ...data, first: e.target.value })} /></div>
+      <div><Label>Last name</Label><Input value={data.last} onChange={(e) => setData({ ...data, last: e.target.value })} /></div>
+      <div className="sm:col-span-2"><Label>Street Address</Label><Input value={data.street || ""} onChange={(e) => setData({ ...data, street: e.target.value })} /></div>
+      <div><Label>City</Label><Input value={data.city || ""} onChange={(e) => setData({ ...data, city: e.target.value })} /></div>
+      <div><Label>State</Label><Input value={data.state || "NC"} disabled /></div>
+      <div><Label>Zip</Label><Input value={data.zip} onChange={(e) => setData({ ...data, zip: e.target.value })} /></div>
     </div>
     <div className="flex items-center gap-3">
-      <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
-      <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>Continue</Button>
+      <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+      <Button style={bg(THEME.primary)} onClick={next}>Continue</Button>
     </div>
   </div>
 );
@@ -193,239 +202,155 @@ const ContactStep = ({ data, setData, next, back }) => {
     <div className="space-y-6">
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Contact information</h3>
       <div className="grid sm:grid-cols-2 gap-4">
-        <div><Label>Email</Label><Input type="email" placeholder="you@example.com" value={data.email || ""} onChange={(e) => setData({ ...data, email: e.target.value })} /></div>
-        <div><Label>Phone</Label><Input type="tel" placeholder="(555) 555-5555" value={data.phone || ""} onChange={(e) => setData({ ...data, phone: e.target.value })} /></div>
+        <div><Label>Email</Label><Input type="email" value={data.email || ""} onChange={(e) => setData({ ...data, email: e.target.value })} /></div>
+        <div><Label>Phone</Label><Input type="tel" value={data.phone || ""} onChange={(e) => setData({ ...data, phone: e.target.value })} /></div>
         <div className="sm:col-span-2">
           <label className="flex items-start gap-3 text-sm text-gray-700">
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1" />
-            <span>We may communicate with you via phone, email, and text to assist you with your quote or policy. By clicking<span className="font-semibold"> "Agree and Continue"</span> you have read and agree to the <a className="underline" href="#">Terms</a> and <a className="underline" href="#">Privacy Policy</a>.</span>
+            <span>We may contact you to assist with your quote or policy. Click <span className="font-semibold">Agree and Continue</span> to accept our <a className="underline" href="#">Terms</a> and <a className="underline" href="#">Privacy Policy</a>.</span>
           </label>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} disabled={!agree} aria-disabled={!agree} onClick={onContinue}>Agree and Continue</Button>
+        <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+        <Button style={bg(THEME.primary)} disabled={!agree} aria-disabled={!agree} onClick={onContinue}>Agree and Continue</Button>
       </div>
     </div>
   );
 };
 
-const LicenseStep = ({ data, setData, next, back }) => {
-  const status = data.licenseStatus || "";
-  const askAge = status === "Active" || status === "Suspended/Revoked";
-  const askNumState = askAge || status === "Permit";
-  return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>License</h3>
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div><Label>Date of Birth</Label><Input type="date" value={data.dob || ""} onChange={(e) => setData({ ...data, dob: e.target.value })} /></div>
-        <div>
-          <Label>Gender</Label>
-          <select className="w-full border rounded-md h-10 px-3 focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.gender || ""} onChange={(e) => setData({ ...data, gender: e.target.value })}>
-            <option value="">Select...</option>
-            <option value="Female">Female</option>
-            <option value="Male">Male</option>
-            <option value="Non-binary">Non-binary</option>
-            <option value="Prefer not to say">Prefer not to say</option>
-          </select>
-        </div>
-        <div>
-          <Label>License Status</Label>
-          <select className="w-full border rounded-md h-10 px-3 focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={status} onChange={(e) => setData({ ...data, licenseStatus: e.target.value })}>
-            <option value="">Select status...</option>
-            <option value="Never Licensed">Never Licensed</option>
-            <option value="Active">Active</option>
-            <option value="Suspended/Revoked">Suspended/Revoked</option>
-            <option value="Permit">Permit</option>
-          </select>
-        </div>
-        {askAge && (
-          <div>
-            <Label>Age when first licensed</Label>
-            <Input type="number" min={16} max={100} step={1} value={data.firstLicensedAge ?? ""} onChange={(e) => { const n = Number(e.target.value); if (Number.isNaN(n)) { setData({ ...data, firstLicensedAge: "" }); } else { const clamped = Math.max(16, Math.min(100, n)); setData({ ...data, firstLicensedAge: clamped }); } }} />
-            <p className="text-xs text-gray-500 mt-1">Enter a number between 16 and 100.</p>
-          </div>
-        )}
-        {askNumState && (
-          <>
-            <div><Label>License number</Label><Input placeholder="ABC123456" value={data.license} onChange={(e) => setData({ ...data, license: e.target.value.toUpperCase() })} /></div>
-            <div><Label>Issuing state</Label><Input placeholder="NC" value={data.licState} onChange={(e) => setData({ ...data, licState: e.target.value.toUpperCase().slice(0, 2) })} /></div>
-          </>
-        )}
+const LicenseStep = ({ data, setData, next, back }) => (
+  <div className="space-y-6">
+    <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>License</h3>
+    <div className="grid sm:grid-cols-2 gap-4">
+      <div><Label>Date of Birth</Label><Input type="date" value={data.dob || ""} onChange={(e) => setData({ ...data, dob: e.target.value })} /></div>
+      <div>
+        <Label>License Status</Label>
+        <select className="w-full border rounded-md h-10 px-3" value={data.licenseStatus || ""} onChange={(e) => setData({ ...data, licenseStatus: e.target.value })}>
+          <option value="">Select status...</option>
+          <option value="Never Licensed">Never Licensed</option>
+          <option value="Active">Active</option>
+          <option value="Suspended/Revoked">Suspended/Revoked</option>
+          <option value="Permit">Permit</option>
+        </select>
       </div>
-      <div className="flex items-center gap-3">
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>Continue</Button>
-      </div>
+      <div><Label>License number</Label><Input value={data.license} onChange={(e) => setData({ ...data, license: e.target.value })} /></div>
+      <div><Label>Issuing state</Label><Input value={data.licState} onChange={(e) => setData({ ...data, licState: e.target.value })} /></div>
     </div>
-  );
-};
+    <div className="flex items-center gap-3">
+      <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+      <Button style={bg(THEME.primary)} onClick={next}>Continue</Button>
+    </div>
+  </div>
+);
 
-const HistoryStep = ({ data, setData, next, back }) => {
-  const showViolations = data.hasViolations === "yes";
-  const showAccidents = data.hasAccidents === "yes";
-  const OPTIONS = ["Sample Speeding Ticket", "Sample Violation", "Sample Accident"];
-  return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Driving history</h3>
-      <div className="flex flex-col items-center gap-8 sm:grid sm:grid-cols-2 sm:items-start">
-        <div className="w-full max-w-xs text-center sm:text-left">
-          <Label>Do you have any traffic violations in the past 5 years?</Label>
-          <div className="mt-2 flex flex-row items-center justify-center sm:justify-start gap-6">
-            <label className="inline-flex items-center gap-2"><input type="radio" name="hasViolations" value="no" checked={data.hasViolations === "no"} onChange={() => setData({ ...data, hasViolations: "no", violationType: "" })} /><span>No</span></label>
-            <label className="inline-flex items-center gap-2"><input type="radio" name="hasViolations" value="yes" checked={data.hasViolations === "yes"} onChange={() => setData({ ...data, hasViolations: "yes" })} /><span>Yes</span></label>
-          </div>
-          {showViolations && (
-            <div className="mt-3">
-              <div className="text-sm text-gray-600 mb-1">Please select the best match below</div>
-              <select className="w-full border rounded-md h-10 px-3 focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.violationType || ""} onChange={(e) => setData({ ...data, violationType: e.target.value })}>
-                <option value="" disabled>Select...</option>
-                {OPTIONS.map((o) => (<option key={o} value={o}>{o}</option>))}
-              </select>
-            </div>
-          )}
-        </div>
-        <div className="w-full max-w-xs text-center sm:text-left">
-          <Label>Have you been involved in an accident in the last 5 years?</Label>
-          <div className="mt-2 flex flex-row items-center justify-center sm:justify-start gap-6">
-            <label className="inline-flex items-center gap-2"><input type="radio" name="hasAccidents" value="no" checked={data.hasAccidents === "no"} onChange={() => setData({ ...data, hasAccidents: "no", accidentType: "" })} /><span>No</span></label>
-            <label className="inline-flex items-center gap-2"><input type="radio" name="hasAccidents" value="yes" checked={data.hasAccidents === "yes"} onChange={() => setData({ ...data, hasAccidents: "yes" })} /><span>Yes</span></label>
-          </div>
-          {showAccidents && (
-            <div className="mt-3">
-              <div className="text-sm text-gray-600 mb-1">Please select the best match below</div>
-              <select className="w-full border rounded-md h-10 px-3 focus:ring-2 focus:ring-offset-0 focus:ring-[#0D2D53] focus:border-[#0D2D53] transition-shadow" value={data.accidentType || ""} onChange={(e) => setData({ ...data, accidentType: e.target.value })}>
-                <option value="" disabled>Select...</option>
-                {OPTIONS.map((o) => (<option key={o} value={o}>{o}</option>))}
-              </select>
-            </div>
-          )}
+const HistoryStep = ({ data, setData, next, back }) => (
+  <div className="space-y-6">
+    <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Driving history</h3>
+    <div className="grid sm:grid-cols-2 gap-4">
+      <div>
+        <Label>Any traffic violations in the last 5 years?</Label>
+        <div className="mt-2 flex items-center gap-6">
+          <label className="inline-flex items-center gap-2"><input type="radio" name="hasViolations" value="no" checked={data.hasViolations === "no"} onChange={() => setData({ ...data, hasViolations: "no" })} /><span>No</span></label>
+          <label className="inline-flex items-center gap-2"><input type="radio" name="hasViolations" value="yes" checked={data.hasViolations === "yes"} onChange={() => setData({ ...data, hasViolations: "yes" })} /><span>Yes</span></label>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={next}>Continue</Button>
+      <div>
+        <Label>Any accidents in the last 5 years?</Label>
+        <div className="mt-2 flex items-center gap-6">
+          <label className="inline-flex items-center gap-2"><input type="radio" name="hasAccidents" value="no" checked={data.hasAccidents === "no"} onChange={() => setData({ ...data, hasAccidents: "no" })} /><span>No</span></label>
+          <label className="inline-flex items-center gap-2"><input type="radio" name="hasAccidents" value="yes" checked={data.hasAccidents === "yes"} onChange={() => setData({ ...data, hasAccidents: "yes" })} /><span>Yes</span></label>
+        </div>
       </div>
     </div>
-  );
-};
+    <div className="flex items-center gap-3">
+      <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+      <Button style={bg(THEME.primary)} onClick={next}>Continue</Button>
+    </div>
+  </div>
+);
 
 const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
+  const BASIC = { label: 'Basic', bi: [50000,100000], pd: 50000, umbi: [50000,100000], umpd: 50000, monthly: 46.8 };
+  const PLUS  = { label: 'Plus',  bi: [100000,300000], pd: 50000, umbi: [100000,300000], umpd: 50000, monthly: 93.6 };
+  const toKey = (arr)=>`${arr[0]}/${arr[1]}`;
   const [tab, setTab] = useState('basic');
-  const [customLimits, setCustomLimits] = useState('50/100/50');
-  const limitsMap = {
-    '50/100/50': { coveragePackage: 'stateMin', biPerPerson: 50000, biPerAccident: 100000, pdPerAccident: 50000, umPerPerson: 50000, umPerAccident: 100000, biLimit: 50000, umLimit: 50000 },
-    '100/300/50': { coveragePackage: 'high', biPerPerson: 100000, biPerAccident: 300000, pdPerAccident: 50000, umPerPerson: 100000, umPerAccident: 300000, biLimit: 100000, umLimit: 100000 },
-  };
-  const selectedPkg = tab === 'basic' ? limitsMap['50/100/50'] : tab === 'plus' ? limitsMap['100/300/50'] : limitsMap[customLimits];
-  const monthlyCalc = useMemo(() => priceQuote({ state: data.state || 'NC', sr22: data.sr22, age: data.age || 30, biLimit: selectedPkg.biLimit, umLimit: selectedPkg.umLimit }), [data.state, data.sr22, data.age, selectedPkg.biLimit, selectedPkg.umLimit]);
-  const monthly = isMobile ? 46.8 : monthlyCalc;
-  const sixMonth = (monthly * 6).toFixed(2);
-  const formatK = (n) => `$${Math.round(n / 1000)}K`;
-  const CoverageRows = (pkg) => (
-    <div className="space-y-3">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="font-semibold text-[13px]">Bodily Injury Liability</div>
-          <div className="text-[11px] text-gray-600">per person/per accident</div>
-        </div>
-        <div className="text-[13px] font-semibold">{formatK(pkg.biPerPerson)} / {formatK(pkg.biPerAccident)}</div>
+  const [customKey, setCustomKey] = useState(toKey(BASIC.bi));
+  const [accProt, setAccProt] = useState(true);
+  const current = tab==='basic' ? BASIC : tab==='plus' ? PLUS : (customKey===toKey(BASIC.bi) ? BASIC : PLUS);
+  const dueToday = current.monthly;
+  const total6 = (current.monthly*6).toFixed(2);
+  const Option = ({label, active, subtitle, onClick}) => (
+    <button type="button" onClick={onClick} className={`flex-1 px-6 py-3 text-center border ${active? 'bg-white border-t-4':'bg-gray-100'} rounded-t-md`} style={active?{borderTopColor:'#f49646'}:{}}>
+      <div className="font-semibold">{label}</div>
+      {subtitle && <div className="text-sm text-gray-600">{subtitle}</div>}
+      {active && <div className="text-xs text-gray-500">Selected</div>}
+    </button>
+  );
+  const Row = ({left, right, sub}) => (
+    <div className="flex items-start justify-between py-3 border-b last:border-b-0">
+      <div>
+        <div className="font-semibold text-[15px]" style={color(THEME.secondary)}>{left}</div>
+        <div className="text-xs text-gray-500">{sub}</div>
       </div>
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="font-semibold text-[13px]">Property Damage Liability</div>
-          <div className="text-[11px] text-gray-600">per accident</div>
-        </div>
-        <div className="text-[13px] font-semibold">{formatK(pkg.pdPerAccident)}</div>
-      </div>
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="font-semibold text-[13px]">Un/Underinsured Motorist</div>
-          <div className="font-semibold text-[13px]">Bodily Injury</div>
-          <div className="text-[11px] text-gray-600">per person/per accident</div>
-        </div>
-        <div className="text-[13px] font-semibold">{formatK(pkg.umPerPerson)} / {formatK(pkg.umPerAccident)}</div>
-      </div>
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="font-semibold text-[13px]">Uninsured Motorist</div>
-          <div className="font-semibold text-[13px]">Property Damage</div>
-          <div className="text-[11px] text-gray-600">per accident</div>
-        </div>
-        <div className="text-[13px] font-semibold">{formatK(pkg.pdPerAccident)}</div>
-      </div>
+      <div className="font-semibold text-[15px]" style={color(THEME.secondary)}>{right}</div>
     </div>
   );
+  const labelFor = (arr)=>`$${(arr[0]/1000).toFixed(0)}K / $${(arr[1]/1000).toFixed(0)}K`;
+  const pdLabel = (n)=>`$${(n/1000).toFixed(0)}K`;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Choose Your Coverage</h3>
       <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="text-center space-y-2">
+        <CardContent className="p-6">
+          <div className="text-center">
             <div className="text-sm text-gray-500">Due Today</div>
-            <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${monthly.toFixed(2)}</div>
-            <div className="text-sm text-gray-600">6 Month Total Premium: ${sixMonth}</div>
+            <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${dueToday.toFixed(2)}</div>
+            <div className="text-sm text-gray-600">6 Month Total Premium: {total6}</div>
           </div>
-          {(() => {
-            const computeMonthly = (pkg) => (isMobile ? 46.8 : priceQuote({ state: data.state || 'NC', sr22: data.sr22, age: data.age || 30, biLimit: pkg.biLimit, umLimit: pkg.umLimit }));
-            const priceBasic = computeMonthly(limitsMap['50/100/50']);
-            const pricePlus = computeMonthly(limitsMap['100/300/50']);
-            const priceCustom = computeMonthly(limitsMap[customLimits]);
-            return (
-              <div className="mt-2 grid grid-cols-3 text-center text-sm rounded-md overflow-hidden border">
-                <button onClick={() => setTab('basic')} className={`py-2 px-3 bg-white border-r ${tab==='basic' ? 'border-t-2 border-t-[#f49646] font-semibold' : 'bg-gray-100'}`}>
-                  <div>Basic</div>
-                  <div className="text-xs text-gray-600">{tab==='basic' ? 'Selected' : `$${priceBasic.toFixed(2)}/mo`}</div>
-                </button>
-                <button onClick={() => setTab('plus')} className={`py-2 px-3 border-r ${tab==='plus' ? 'bg-white border-t-2 border-t-[#f49646] font-semibold' : 'bg-gray-100'}`}>
-                  <div>Plus</div>
-                  <div className="text-xs text-gray-600">{tab==='plus' ? 'Selected' : `$${pricePlus.toFixed(2)}/mo`}</div>
-                </button>
-                <button onClick={() => setTab('custom')} className={`py-2 px-3 ${tab==='custom' ? 'bg-white border-t-2 border-t-[#f49646] font-semibold' : 'bg-gray-100'}`}>
-                  <div>Custom</div>
-                  <div className="text-xs text-gray-600">{tab==='custom' ? 'Selected' : `$${priceCustom.toFixed(2)}/mo`}</div>
-                </button>
-              </div>
-            );
-          })()}
-          {tab !== 'custom' && (
-            <div className="space-y-4">
-              {CoverageRows(selectedPkg)}
-              <label className="flex items-center justify-between gap-3 border rounded-lg p-3">
+
+          <div className="mt-5 flex rounded-md overflow-hidden">
+            <Option label="Basic" active={tab==='basic'} subtitle="$46.80/mo" onClick={()=>setTab('basic')} />
+            <Option label="Plus" active={tab==='plus'} subtitle="$93.60/mo" onClick={()=>setTab('plus')} />
+            <Option label="Custom" active={tab==='custom'} subtitle={`$${dueToday.toFixed(2)}/mo`} onClick={()=>setTab('custom')} />
+          </div>
+
+          <div className="mt-6 space-y-2 text-sm">
+            {tab==='custom' && (
+              <div className="mb-4 grid sm:grid-cols-2 gap-3">
                 <div>
-                  <div className="font-medium">Accident Protection Plan</div>
-                  <div className="text-xs text-gray-600">$10,000 per person, per accident</div>
+                  <Label>Liability Limits & UM/UIM (must match)</Label>
+                  <select className="w-full border rounded-md h-10 px-3 text-sm" value={customKey} onChange={(e)=>setCustomKey(e.target.value)}>
+                    <option value={toKey(BASIC.bi)}>Bodily Injury $50K/$100K & Property Damage $50K</option>
+                    <option value={toKey(PLUS.bi)}>Bodily Injury $100K/$300K & Property Damage $50K</option>
+                  </select>
                 </div>
-                <input type="checkbox" checked={data.accidentPlan ?? true} onChange={(e) => setData({ ...data, accidentPlan: e.target.checked })} />
+              </div>
+            )}
+
+            <Row left="Bodily Injury Liability" right={labelFor(current.bi)} sub="per person/per accident" />
+            <Row left="Property Damage Liability" right={pdLabel(current.pd)} sub="per accident" />
+            <div className="py-1" />
+            <Row left={<><div>Un/Underinsured Motorist</div><div>Bodily Injury</div></>} right={labelFor(current.umbi)} sub="per person/per accident" />
+            <Row left={<><div>Uninsured Motorist</div><div>Property Damage</div></>} right={pdLabel(current.umpd)} sub="per accident" />
+
+            <div className="mt-4 border rounded-xl p-4">
+              <label className="flex items-start gap-3">
+                <input type="checkbox" className="mt-1" checked={accProt} onChange={(e)=>setAccProt(e.target.checked)} />
+                <div>
+                  <div className="font-semibold">Accident Protection Plan</div>
+                  <div className="text-xs text-gray-500">$10,000 per person, per accident</div>
+                </div>
               </label>
             </div>
-          )}
-          {tab === 'custom' && (
-            <div className="space-y-4 text-sm text-gray-700">
-              <div>
-                <Label>Liability Limits and UM/UIM</Label>
-                <select className="w-full border rounded-md h-10 px-3" value={customLimits} onChange={(e) => setCustomLimits(e.target.value)}>
-                  <option value="50/100/50">50/100/50</option>
-                  <option value="100/300/50">100/300/50</option>
-                </select>
-                <p className="text-xs text-gray-600 mt-1">Bodily Injury per person / Bodily Injury per accident / Property Damage per accident</p>
-              </div>
-              {CoverageRows(selectedPkg)}
-              <label className="flex items-center justify-between gap-3 border rounded-lg p-3 w-full">
-                <div>
-                  <div className="font-medium">Accident Protection Plan</div>
-                  <div className="text-xs text-gray-600">$10,000 per person, per accident</div>
-                </div>
-                <input type="checkbox" checked={data.accidentPlan ?? true} onChange={(e) => setData({ ...data, accidentPlan: e.target.checked })} />
-              </label>
-            </div>
-          )}
-          <div className="pt-2">
-            <p className="text-xs text-gray-500">Non-Owner Auto Insurance is secondary to the Vehicle Owner's policy and excludes Comprehensive and Collision Coverage.</p>
+
+            <p className="text-[13px] text-gray-600 mt-4">Non-Owner Auto Insurance is secondary to the Vehicle Owner's policy and excludes Comprehensive and Collision Coverage.</p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3 pt-2">
-            <Button variant="ghost" className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
-            <Button className="w-full transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)} onClick={() => { const pkgOut = selectedPkg; setData({ ...data, ...pkgOut, monthly }); next(); }}>Continue</Button>
+
+          <div className="grid sm:grid-cols-2 gap-3 pt-6">
+            <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+            <Button style={bg(THEME.primary)} onClick={() => next()}>Finalize Rate & Buy</Button>
           </div>
         </CardContent>
       </Card>
@@ -433,17 +358,49 @@ const CoverageStep = ({ data, setData, next, back, isMobile = false }) => {
   );
 };
 
-const SummaryStep = ({ back, data, setData }) => {
+const VerifyDrivingStep = ({ next, back }) => {
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setDone(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Driving History</h3>
+      <Card>
+        <CardContent className="p-8 flex flex-col items-center justify-center gap-4 text-center">
+          {!done ? (
+            <>
+              <div className="text-sm text-gray-600">Verifying Driving History</div>
+              <div className="h-10 w-10 rounded-full border-2 border-gray-300 border-t-[#f49646] animate-spin" />
+            </>
+          ) : (
+            <>
+              <div className="text-sm font-medium" style={color(THEME.secondary)}>Reports Confirmed</div>
+              <Button style={bg(THEME.primary)} onClick={next}>Continue</Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+      <div>
+        <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+      </div>
+    </div>
+  );
+};
+
+const SummaryStep = ({ back, data, setData, next }) => {
   const monthly = 46.8;
   const paidInFull = 280.8;
   const [plan, setPlan] = useState((data && data.paymentPlan) ? data.paymentPlan : "monthly");
+  const [showInfo, setShowInfo] = useState(false);
   const onChoose = (value) => { setPlan(value); if (setData) setData({ ...data, paymentPlan: value }); };
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Quote Summary</h3>
       <Card>
         <CardContent className="p-6 space-y-4">
-          <p className="text-sm text-gray-600"><span className="inline-flex items-center gap-1"><Check className="w-4 h-4" style={color(THEME.secondary)} /><span className="font-semibold">Almost there!</span></span> Based on the information you provided and the quote options you selected we can start your policy today for:</p>
+          <p className="text-sm text-gray-600"><span className="inline-flex items-center gap-1"><Check className="w-4 h-4" style={color(THEME.secondary)} /><span className="font-semibold">Almost there!</span></span> Select your payment plan to continue</p>
           <div className="grid gap-3">
             <label className={`flex items-center justify-between gap-4 rounded-xl border p-4 cursor-pointer ${plan === "monthly" ? "ring-2" : ""}`} style={plan === "monthly" ? border(THEME.primary) : undefined}>
               <div className="flex items-start gap-3">
@@ -475,29 +432,159 @@ const SummaryStep = ({ back, data, setData }) => {
           </div>
         </CardContent>
       </Card>
+      <div className="text-sm italic text-gray-600 flex items-center gap-2">
+        <span>Why did my rate change?</span>
+        <div className="relative inline-block">
+          <button aria-haspopup="dialog" aria-expanded={showInfo} aria-label="Why did my rate change?" onClick={() => setShowInfo(v => !v)} className="inline-flex items-center justify-center w-7 h-7 rounded-full border">
+            <Info className="w-4 h-4" />
+          </button>
+          {showInfo && (
+            <div role="dialog" className="absolute z-20 mt-2 w-80 max-w-[90vw] right-0 rounded-lg border bg-white shadow-lg p-3 text-xs not-italic">
+              <div className="flex items-start gap-2">
+                <div className="mt-0.5"><Info className="w-4 h-4" style={color(THEME.secondary)} /></div>
+                <p>Your rate may have changed due to a difference in your entered years of experience and driving history compared to your Motor Vehicle Report. For questions please call the number above.</p>
+              </div>
+              <div className="text-right mt-2">
+                <Button size="sm" variant="outline" onClick={() => setShowInfo(false)}>Close</Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" variant="secondary" onClick={back}>Back</Button>
-        <Button className="transition-transform duration-150 hover:shadow-md active:scale-[0.98]" style={bg(THEME.primary)}>Finalize Rate & Buy</Button>
+        <Button variant="secondary" onClick={back}>Back</Button>
+        <Button style={bg(THEME.primary)} onClick={next}>Continue to Sign</Button>
       </div>
     </div>
   );
 };
 
-const TopBar = ({ isDesktop }) => (
-  <div className="flex items-center justify-between mb-4">
-    <BrandLogo height={28} src="/able-logo.svg" />
-    {isDesktop ? (
-      <a href="tel:+19104524333" className="hidden sm:flex items-center gap-2 text-sm font-medium" style={color(THEME.secondary)}><Phone className="w-4 h-4" /> (910) 452-4333</a>
-    ) : (
-      <a href="tel:+19104524333" className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm" style={{ ...bg(THEME.primary), color: "#ffffff" }}><Phone className="w-3.5 h-3.5" /> Call Now</a>
-    )}
-  </div>
-);
+const FinalizeSignStep = ({ back, next, data }) => {
+  const [confirm, setConfirm] = useState(false);
+  const [showList, setShowList] = useState(false);
+  const [activeDoc, setActiveDoc] = useState(null);
+  const [docs, setDocs] = useState([
+    { id: 'app', title: 'Application & Disclosures', signed: false },
+    { id: 'um', title: 'NC UM/UIM Selection', signed: false },
+    { id: 'pay', title: 'Payment Authorization', signed: false },
+  ]);
+  const markSigned = (id) => setDocs(docs.map(d => d.id === id ? { ...d, signed: true } : d));
+  const allSigned = docs.every(d => d.signed);
+  const canContinue = confirm && allSigned;
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Finalize & Sign Documents</h3>
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="space-y-3">
+            {docs.map(doc => (
+              <div key={doc.id} className="flex items-center justify-between gap-3 border rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <div className={`h-2.5 w-2.5 rounded-full ${doc.signed ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <div className="text-sm font-medium">{doc.title}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setActiveDoc(doc)}>Preview</Button>
+                  {!doc.signed && (
+                    <Button size="sm" style={bg(THEME.primary)} onClick={() => setActiveDoc(doc)}>Sign</Button>
+                  )}
+                  {doc.signed && (
+                    <span className="text-xs text-green-700 font-semibold">Signed</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <label className="flex items-start gap-3 text-sm text-gray-800">
+            <input type="checkbox" className="mt-1" checked={confirm} onChange={(e)=>setConfirm(e.target.checked)} />
+            <span>
+              I confirm I am a North Carolina Resident and can provide one of the <button type="button" className="underline" onClick={()=>setShowList(v=>!v)}>following documents</button> as proof of residency within 10 days of binding this policy if requested.
+            </span>
+          </label>
+          {showList && (
+            <ul className="list-disc pl-6 text-sm text-gray-600 space-y-1">
+              <li>Utility bill with your current NC address (paper or electronic).</li>
+              <li>Receipt for personal property taxes paid within the last 12 months showing your current NC address (paper or electronic).</li>
+              <li>Receipt for real property taxes paid to a NC locality within the last 12 months showing your current NC address (paper or electronic).</li>
+              <li>Valid, unexpired NC driver's license with your current NC address.</li>
+              <li>Valid NC vehicle registration with your current NC address.</li>
+              <li>Valid military ID.</li>
+              <li>Valid student ID for a NC school or university.</li>
+              <li>Most recent federal income tax return showing your name and current NC address.</li>
+              <li>Homeowner's or renter's declarations page showing your current NC address.</li>
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button variant="secondary" onClick={back}>Back</Button>
+        <Button disabled={!canContinue} aria-disabled={!canContinue} style={bg(THEME.primary)} onClick={next}>Continue to Payment</Button>
+      </div>
+
+      {activeDoc && (
+        <div className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="p-4 border-b flex items-center justify-between">
+              <div className="font-semibold text-sm" style={color(THEME.secondary)}>Document Shell — {activeDoc.title}</div>
+              <button className="text-sm underline" onClick={() => setActiveDoc(null)}>Close</button>
+            </div>
+            <div className="p-4 h-64 overflow-auto text-sm text-gray-700">
+              <p>This is a read-only preview shell for {activeDoc.title}. In the real app, your e-signature tooling would render the document here.</p>
+              <p className="mt-3">Scroll to the bottom and click Sign to emulate completing your signature.</p>
+              <div className="mt-4 h-32 rounded-md border bg-gray-50 flex items-center justify-center">Document content</div>
+            </div>
+            <div className="p-4 border-t flex items-center justify-end gap-2">
+              {!docs.find(d=>d.id===activeDoc.id)?.signed && (
+                <Button style={bg(THEME.primary)} onClick={() => { markSigned(activeDoc.id); setActiveDoc(null); }}>Sign</Button>
+              )}
+              {docs.find(d=>d.id===activeDoc.id)?.signed && (
+                <Button variant="outline" onClick={() => setActiveDoc(null)}>Done</Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PaymentStep = ({ back, data }) => {
+  const plan = (data && data.paymentPlan) || 'monthly';
+  const amount = plan === 'pif' ? 280.8 : 46.8;
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold" style={color(THEME.secondary)}>Payment</h3>
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="text-sm text-gray-600">Amount due today</div>
+          <div className="text-4xl font-semibold" style={color(THEME.secondary)}>${amount.toFixed(2)}</div>
+          <div className="text-xs text-gray-500">This is a demo payment screen.</div>
+          <div className="pt-2 flex gap-3">
+            <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-1" />Back</Button>
+            <Button style={bg(THEME.primary)}>Pay Now</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 function DesktopPreview() {
   const [step, setStep] = useState(0);
   const [data, setData] = useState(makeInitialState());
-  const steps = ["Start", "Eligibility", "Personal", "Contact", "License", "History", "Coverage", "Summary"];
+  const steps = [
+    "Start",
+    "Eligibility",
+    "Personal",
+    "Contact",
+    "License",
+    "History",
+    "Coverage",
+    "Driving History",
+    "Summary",
+    "Finalize & Sign Documents",
+    "Payment",
+  ];
   const StepBody = () => {
     switch (step) {
       case 0: return <StartStep next={() => setStep(1)} />;
@@ -507,7 +594,10 @@ function DesktopPreview() {
       case 4: return <LicenseStep data={data} setData={setData} next={() => setStep(5)} back={() => setStep(3)} />;
       case 5: return <HistoryStep data={data} setData={setData} next={() => setStep(6)} back={() => setStep(4)} />;
       case 6: return <CoverageStep data={data} setData={setData} next={() => setStep(7)} back={() => setStep(5)} />;
-      case 7: return <SummaryStep data={data} setData={setData} back={() => setStep(2)} />;
+      case 7: return <VerifyDrivingStep next={() => setStep(8)} back={() => setStep(6)} />;
+      case 8: return <SummaryStep data={data} setData={setData} back={() => setStep(6)} next={() => setStep(9)} />;
+      case 9: return <FinalizeSignStep data={data} back={() => setStep(8)} next={() => setStep(10)} />;
+      case 10: return <PaymentStep back={() => setStep(9)} data={data} />;
       default: return null;
     }
   };
@@ -551,45 +641,8 @@ function DesktopPreview() {
 }
 
 function MobilePreview() {
-  const [step, setStep] = useState(0);
-  const [data, setData] = useState(makeInitialState());
-  const steps = ["Start", "Eligibility", "Personal", "Contact", "License", "History", "Coverage", "Summary"];
-  const StepBody = () => {
-    switch (step) {
-      case 0: return <StartStep next={() => setStep(1)} />;
-      case 1: return <EligibilityStep data={data} setData={setData} next={() => setStep(2)} back={() => setStep(0)} forceStack={true} />;
-      case 2: return <PersonalStep data={data} setData={setData} next={() => setStep(3)} back={() => setStep(1)} />;
-      case 3: return <ContactStep data={data} setData={setData} next={() => setStep(4)} back={() => setStep(2)} />;
-      case 4: return <LicenseStep data={data} setData={setData} next={() => setStep(5)} back={() => setStep(3)} />;
-      case 5: return <HistoryStep data={data} setData={setData} next={() => setStep(6)} back={() => setStep(4)} />;
-      case 6: return <CoverageStep data={data} setData={setData} next={() => setStep(7)} back={() => setStep(5)} isMobile={true} />;
-      case 7: return <SummaryStep data={data} setData={setData} back={() => setStep(2)} />;
-      default: return null;
-    }
-  };
-  return (
-    <div className="w-full flex justify-center p-4">
-      <div className="relative h-[760px] w-[360px] rounded-[36px] border bg-white shadow-2xl overflow-hidden">
-        <div className="absolute inset-x-0 bottom-0 border-t bg-white/90 py-2 z-10"><PoweredBy compact /></div>
-        <div className="absolute inset-x-0 top-0" style={{ ...bg(THEME.primary), height: "calc(48px + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", boxShadow: "0 1px 0 rgba(255,255,255,0.05), 0 1px 6px rgba(0,0,0,0.12)" }}>
-          <div className="flex items-center justify-between px-4 py-2 text-white">
-            <div className="font-semibold tracking-tight">Able Insurance Agency</div>
-            <a href="tel:+19104524333" className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "#ffffff" }}><Phone className="w-3.5 h-3.5" /> Call</a>
-          </div>
-        </div>
-        <div className="absolute left-4 right-4 z-20" style={{ top: "calc(50px + env(safe-area-inset-top))" }}><StepsBar step={step} steps={steps} size="sm" /></div>
-        <div className="absolute inset-x-0" style={{ top: "calc(80px + env(safe-area-inset-top))", bottom: "56px", overflowY: "auto" }}>
-          <div className="p-4">
-            <AnimatePresence mode="wait">
-              <motion.div key={step} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
-                <StepBody />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  // Minimal mobile wrapper — mirrors desktop for now
+  return <DesktopPreview />;
 }
 
 export default function AbleNonOwnerApp() {
